@@ -9,7 +9,7 @@ step = 21
 # define motor variables
 spr = 200           # steps per revelation
 travel = 600        # travel in full steps
-speed = 1000       # speed in full steps per second
+speed = 2000       # speed in full steps per second
 mode = "1/32"             # step mode in Full, Half, 1/4, 1/8, 1/16, 1/32
 modedic = {
     "Full": 1,

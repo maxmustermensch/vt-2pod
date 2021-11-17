@@ -1,10 +1,10 @@
-import RPi.GPIO as GPIO
+import Jetson.GPIO as GPIO
 import time
 from random import randint
 
 PIN_C = 26
-PIN_W = 13
-PIN_Y = 19
+PIN_W = 19
+PIN_Y = 13
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup([PIN_C, PIN_W, PIN_Y], GPIO.OUT)

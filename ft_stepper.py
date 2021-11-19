@@ -8,7 +8,7 @@ step = 21
 
 # define motor variables
 spr = 200           # steps per revelation
-travel = 600        # travel in full steps
+travel = 400        # travel in full steps
 speed = 2000       # speed in full steps per second
 mode = "1/32"             # step mode in Full, Half, 1/4, 1/8, 1/16, 1/32
 modedic = {
@@ -26,9 +26,8 @@ mymotortest = RpiMotorLib.A4988Nema(direction, step, GPIO_pins, "DRV8825")
 
 j = False
 
-for i in range(0,2,1):
-    mymotortest.motor_go(j, mode, int(travel/factor), factor/speed, False, .05)
-    j = not j
+mymotortest.motor_go(j, mode, int(travel/factor), factor/speed, False, .05)
+
 
 print(int(travel/factor))
 print(factor/speed)

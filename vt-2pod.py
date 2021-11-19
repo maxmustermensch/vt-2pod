@@ -34,11 +34,11 @@ speed = 2000
 mode = "1/32"
 modedic = {
     "Full": 1,
-    "Half": .5,
-    "1/4": .25,
-    "1/8": .125,
-    "1/16": .0625,
-    "1/32": .03125
+    "Half": 2,
+    "1/4": 4,
+    "1/8": 8,
+    "1/16": 16,
+    "1/32": 32
     }
 fac = modedic[mode]
 
@@ -70,13 +70,25 @@ def home_pos():
     '''
 
     dir = False #False -> closing arms / True -> open
+    home_dist = 5 #distance steps back from end stop
 
     GPIO.add_event_detect(PIN_ibutt, GPIO.RISING, callback = interrupt_service_routine)  
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
-    stepper.motor_go(dir, mode, int(1000/fac), fac/speed, False, 0.05)
 
-    stepper.motor_go(not dir, mode, int(10/fac), fac/speed, False, 0.001)
+    if GPIO.input(PIN_ibutt) == 0:
+        time.sleep (0.005)
+        if GPIO.input(PIN_ibutt)== 0:
+            stepper.motor_go(dir, mode, 1000*fac, 1/fac/speed, False, 0.05)
+    else:
+        stepper.motor_go(not dir, mode, 10*fac, 1/fac/speed, False, 0.05)
+        stepper.motor_go(dir, mode, 15*fac, 1/fac/speed, False, 0.05)
+
+
+    time.sleep(0.2)
+    stepper.motor_go(not dir, mode, home_dist*fac, 1/fac/speed, False, 0.05)
+
+    #stepper.motor_go(not dir, mode, 380*fac, 1/fac/speed, False, 0.05)
 
 
 def get_pos():

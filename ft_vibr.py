@@ -6,20 +6,27 @@ PIN_C = 26
 PIN_W = 19
 PIN_Y = 13
 
+burst = 100 #burst time in ms
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setup([PIN_C, PIN_W, PIN_Y], GPIO.OUT)
 
 for i in range(0,10,1):
 
-    if randint(0,1) == 0:
+    if randint(0,2) == 0:
         GPIO.output([PIN_C, PIN_W, PIN_Y],[GPIO.HIGH, GPIO.HIGH, GPIO.LOW])
         msg = "white"
-        time.sleep(1)
+        time.sleep(burst/1000)
 
-    else:
+    elif randint(0,2) == 1:
         GPIO.output([PIN_C, PIN_W, PIN_Y],[GPIO.HIGH, GPIO.LOW, GPIO.HIGH])
         msg = "yellow"
-        time.sleep(1)
+        time.sleep(burst/1000)
+
+    else:
+        GPIO.output([PIN_C, PIN_W, PIN_Y],[GPIO.HIGH, GPIO.LOW, GPIO.LOW])
+        msg = "single blue"
+        time.sleep(burst/1000)
 
     GPIO.output([PIN_C, PIN_W, PIN_Y], GPIO.LOW)
 

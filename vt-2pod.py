@@ -69,13 +69,12 @@ def home_pos():
     - > kalibiriert stellweg auf null
     '''
 
-    dir = False #False -> closing arms / True -> open
-    home_dist = 5 #distance steps back from end stop
+    dir = False     #False -> closing arms / True -> open
+    home_dist = 5   #distance steps back from end stop to 0-position
 
     GPIO.add_event_detect(PIN_ibutt, GPIO.RISING, callback = interrupt_service_routine)  
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
-
     if GPIO.input(PIN_ibutt) == 0:
         time.sleep (0.005)
         if GPIO.input(PIN_ibutt)== 0:
@@ -93,13 +92,21 @@ def home_pos():
 
 def get_pos():
     '''
-    IN:
+    IN: dG -> distance go
     OUT:
     DO:
     - faehrt die naechste testposition an
         - berechnung benoetigter steps fuer gewuenschten stellweg
 
     '''
+    
+    l = 90
+    dCB = -13
+    stpspmm = 25    #steps per mm
+    h0 = 86.458     #z-axis joint distance at 0-position
+
+
+
 
 def puls_pattern():
     '''

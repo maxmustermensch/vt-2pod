@@ -56,13 +56,14 @@ GPIO.add_event_detect(PIN_ibutt, GPIO.RISING, callback = interrupt_service_routi
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
-def choose_test_mode():
+def choose_test_mode(mode):
     '''
     IN:
     OUT:
     DO:
     - USR sucht den Testmodus aus
     '''
+
 
 def home_pos():
     '''
@@ -134,8 +135,6 @@ def get_pos(dist):
     return
 
 
-
-
 def puls_pattern():
     '''
     IN: auswahl motoren; auswahl des gewuenschten pulsmusters
@@ -146,6 +145,15 @@ def puls_pattern():
     
     '''
 
+def init_tsi():
+    '''
+    IN:
+    OUT:
+    DO:
+    - überprüft ts versändnis der ansteuerung
+    - stellt sicher, dass fernbedienung funktioniert
+    
+    '''
 
 #FUNKCIONENS OPTIONAL___________________________________________________
 def acc():

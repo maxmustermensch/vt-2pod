@@ -161,13 +161,14 @@ def acc():
 #MAIN___________________________________________________________________
 def main():
     home_pos()
+    time.sleep(1)
     get_pos(28)
     time.sleep(1)
     get_pos(14)
     time.sleep(1)
     get_pos(38)
     time.sleep(1)
-    get_pos(0)
+    get_pos(12)
 
     GPIO.output(PIN_stepper_sleep, GPIO.LOW)
     GPIO.cleanup()

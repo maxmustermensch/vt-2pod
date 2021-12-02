@@ -176,7 +176,7 @@ def main():
     time.sleep(1)
     get_pos(38)
     time.sleep(1)
-    get_pos(12)
+    get_pos(20)
 
     GPIO.output(PIN_stepper_sleep, GPIO.LOW)
     GPIO.cleanup()

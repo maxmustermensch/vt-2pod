@@ -14,6 +14,14 @@ import os
 import time
 from RpiMotorLib import RpiMotorLib
 
+#USR_VARIABLES_________________________________________________________
+'''
+- burst index
+- burst duration
+- bursts per position
+- enable/disable correct indication
+'''
+
 #GLOBAL_VARIABLES______________________________________________________
 
 GPIO.setmode(GPIO.BCM)
@@ -22,7 +30,6 @@ GPIO.setmode(GPIO.BCM)
 PINS_mode = (8, 7, 11)
 PIN_dir = 20
 PIN_step = 21
-PIN_ibutt = 6
 PIN_stepper_sleep = 24
 
 #define GPIOs vibration motors
@@ -30,10 +37,19 @@ PIN_center = 26
 PIN_white = 19
 PIN_yellow = 13
 
+#define GPIOs butts <3
+PIN_butt_0pos = 6
+PIN_butt_w = 10
+PIN_butt_y = 9
+
+
 GPIO.setup([PIN_center, PIN_white, PIN_yellow], GPIO.OUT)
 
-#define init button
-GPIO.setup(PIN_ibutt, GPIO.IN)
+#define GPIOs buttons
+GPIO.setup(PIN_butt_0pos, GPIO.IN)
+GPIO.setup([PIN_butt_w, PIN_butt_y], GPIO.IN)
+
+
 GPIO.setup(PIN_stepper_sleep, GPIO.OUT)
 
 
@@ -54,13 +70,13 @@ dir = False     #False -> closing arms / True -> open
 
 stepper = RpiMotorLib.A4988Nema(PIN_dir, PIN_step, PINS_mode, "DRV8825")
 
-def interrupt_service_routine(PIN_ibutt):
+def interrupt_service_routine(PIN_butt_0pos):
     time.sleep(0.005)
-    if GPIO.input(PIN_ibutt) == 1:
+    if GPIO.input(PIN_butt_0pos) == 1:
         stepper.motor_stop()
     return
 
-GPIO.add_event_detect(PIN_ibutt, GPIO.RISING, callback = interrupt_service_routine)
+GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine)
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
@@ -72,21 +88,54 @@ def testing():
     - USR sucht den Testmodus aus
     '''
     test_mode_dic = {
-        "0": [3, [40, 20, 12]],
-        "1": [7, [40, 32, 24, 20, 16, 14, 12]],
-        "2": [7, [40, 36, 32, 28, 20, 12]]
-
+        "0": [3, [1, 2], [40, 20, 12]],
+        "1": [7, [3, 5], [40, 32, 24, 20, 16, 14, 12]],
+        "2": [7, [3, 5], [40, 36, 32, 28, 20, 12]]
         }
 
     print("    0: user training \n    1: forearm \n    2: thigh\n")
-    test_mode = input("choose test mode:")
+    test_mode = input("choose test mode: ")
     test_arr = test_mode_dic[test_mode]
 
-    for m in test_arr[1]:
-        for n in range(0,test_arr[0],1):
-            get_pos(m)
+    for m in test_arr[2]:
+        i = 0
+        get_pos(m)
+        print("\n","____postition ", m,"mm____", sep="")
+        time.sleep(2)
+        for n in random_array(test_arr[0], test_arr[1]):
+            print("burst #", i+1, sep="", end="")
+            if n == 0:
+                burst("1", np.array([1, 1, 0]), 1)
+                str = ": white"
+            else:
+                burst("1", np.array([1, 0, 1]), 1)
+                str = ": yellow"
 
-            print("postition ", m,"mm - burst #", n+1, sep="")
+            time.sleep(2)
+            print(str)
+            time.sleep(1)
+            i=i+1
+
+def random_array(bursts_per_position, minmax):
+    '''
+    IN:
+    OUT:
+    DO:
+    - erstellt 
+    '''
+    k = 0
+
+    min_1 = minmax[0]
+    max_1 = minmax[1]
+
+    while k==0:
+        rand_array = np.rint(np.random.rand(bursts_per_position))
+        if sum(rand_array) >= min_1 and sum(rand_array) <= max_1:
+            k = 1
+
+    return(rand_array)
+
+
 
 
 
@@ -102,12 +151,12 @@ def home_pos():
     dir = False
     stps_home_dist = 12   #distance steps back from end stop to 0-position (12mm)
 
-    #GPIO.add_event_detect(PIN_ibutt, GPIO.RISING, callback = interrupt_service_routine)  
+    #GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine)  
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
-    if GPIO.input(PIN_ibutt) == 0:
+    if GPIO.input(PIN_butt_0pos) == 0:
         time.sleep (0.005)
-        if GPIO.input(PIN_ibutt)== 0:
+        if GPIO.input(PIN_butt_0pos)== 0:
             stepper.motor_go(dir, stp_mode, 1000*fac, 1/fac/speed, False, 0.05)
     else:
         stepper.motor_go(not dir, stp_mode, 10*fac, 1/fac/speed, False, 0.05)
@@ -165,7 +214,7 @@ def get_pos(dist):
     return
 
 
-def burst(v_motor_index, burst_index):
+def burst(burst_index, vib_motor_index, burst_rep):
     '''
     IN: auswahl motoren; auswahl des gewuenschten pulsmusters
     OUT:
@@ -173,20 +222,24 @@ def burst(v_motor_index, burst_index):
     - steuert die motoren im geforderten pulsmuster an
     
     '''
-
-    burst_beat = 0.05
+    burst_duration = 400 #duration of a whole burst in ms
 
     burst_dic = {
         "0": np.array([1, 1, 1, 1, 1, 1, 1, 1]),
-        "1": np.array([1, 0, 1, 0, 1, 0, 1, 0])
+        "1": np.array([1, 0, 1, 0, 1, 0, 1, 0]),
+        "2": np.array([1, 1, 0, 0, 1, 1, 0, 0]),
+        "3": np.array([1, 1, 1, 1, 0, 0, 0, 0]),
     }
 
     burst_mode = burst_dic[burst_index]
 
-    for i in burst_mode:
-        motor_arr = i*v_motor_index
-        GPIO.output([PIN_center, PIN_white, PIN_yellow], motor_arr)
-        time.sleep(burst_beat)
+    for j in range(0,burst_rep,1):
+        for i in burst_mode:
+            motor_arr = i*vib_motor_index
+            GPIO.output([PIN_center, PIN_white, PIN_yellow], motor_arr)
+            time.sleep(burst_duration/len(burst_mode)/1000)
+
+    GPIO.output([PIN_center, PIN_white, PIN_yellow], [0,0,0])
 
     return
 
@@ -217,19 +270,17 @@ def acc():
 
 #MAIN___________________________________________________________________
 def main():
+
     home_pos()
-    get_pos(30)
-    burst(np.array([1,1,0]),"1")
-    burst(np.array([1,0,1]),"0")
-    burst(np.array([0,1,0]),"1")
-    burst(np.array([0,0,1]),"1")
-    burst(np.array([1,0,0]),"1")
+    testing()
+
  
 
     GPIO.output(PIN_stepper_sleep, GPIO.LOW)
+    GPIO.output([PIN_center, PIN_white, PIN_yellow], [0,0,0])
     GPIO.cleanup()
 
-    return
+
 
 
 if __name__ == "__main__":

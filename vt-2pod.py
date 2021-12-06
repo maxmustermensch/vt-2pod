@@ -70,13 +70,43 @@ dir = False     #False -> closing arms / True -> open
 
 stepper = RpiMotorLib.A4988Nema(PIN_dir, PIN_step, PINS_mode, "DRV8825")
 
-def interrupt_service_routine(PIN_butt_0pos):
+#interrupt routines
+quit_loop = True
+
+def interrupt_service_routine_in1():
+    global quit_loop
+    global PIN_butt_w
+    global PIN_butt_y  
+    time.sleep(0.005)
+    if GPIO.input(PIN_butt_w) == 0:
+        quit_loop = False
+        GPIO.remove_event_detect(PIN_butt_w)
+        GPIO.remove_event_detect(PIN_butt_y)
+        print("w")
+
+    return
+
+def interrupt_service_routine_in2():
+    global quit_loop
+    global PIN_butt_w
+    global PIN_butt_y
+    time.sleep(0.005)
+    if GPIO.input(PIN_butt_y) == 0:
+        quit_loop = False
+        GPIO.remove_event_detect(PIN_butt_w)
+        GPIO.remove_event_detect(PIN_butt_y)
+        print("y")
+        
+    return
+
+def interrupt_routine_0pos():
+    global PIN_butt_0pos
     time.sleep(0.005)
     if GPIO.input(PIN_butt_0pos) == 1:
         stepper.motor_stop()
     return
 
-GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine)
+GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_routine_0pos)
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
@@ -103,16 +133,16 @@ def testing():
         print("\n","____postition ", m,"mm____", sep="")
         time.sleep(2)
         for n in random_array(test_arr[0], test_arr[1]):
-            print("burst #", i+1, sep="", end="")
+            print("burst #", i+1, sep="")
             if n == 0:
                 burst("1", np.array([1, 1, 0]), 1)
-                str = ": white"
+                #str = ": white"
             else:
                 burst("1", np.array([1, 0, 1]), 1)
-                str = ": yellow"
+                #str = ": yellow"
 
-            time.sleep(2)
-            print(str)
+
+            tsi_input()
             time.sleep(1)
             i=i+1
 
@@ -136,9 +166,6 @@ def random_array(bursts_per_position, minmax):
     return(rand_array)
 
 
-
-
-
 def home_pos():
     '''
     IN:
@@ -151,7 +178,7 @@ def home_pos():
     dir = False
     stps_home_dist = 12   #distance steps back from end stop to 0-position (12mm)
 
-    #GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine)  
+    #GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_routine_0pos)  
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
     if GPIO.input(PIN_butt_0pos) == 0:
@@ -254,6 +281,25 @@ def init_tsi():
     - stellt sicher, dass fernbedienung funktioniert
     
     '''
+
+def tsi_input():
+    '''
+    IN:
+    OUT:
+    DO:
+    - 
+    
+    '''
+    global PIN_butt_w
+    global PIN_butt_y
+    global quit_loop
+    quit_loop = True
+
+    GPIO.add_event_detect(PIN_butt_w, GPIO.FALLING, callback = interrupt_service_routine_in1)
+    GPIO.add_event_detect(PIN_butt_y, GPIO.FALLING, callback = interrupt_service_routine_in2)
+
+    while quit_loop:
+        pass
 
 
 

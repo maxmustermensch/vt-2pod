@@ -72,35 +72,36 @@ stepper = RpiMotorLib.A4988Nema(PIN_dir, PIN_step, PINS_mode, "DRV8825")
 
 #interrupt routines
 quit_loop = True
+tsi_answer = ""
 
-def interrupt_service_routine_in1():
+def interrupt_service_routine_in1(PIN_butt_w):
+    global tsi_answer
     global quit_loop
-    global PIN_butt_w
+    #global PIN_butt_w
     global PIN_butt_y  
     time.sleep(0.005)
     if GPIO.input(PIN_butt_w) == 0:
+        tsi_answer = "w"
         quit_loop = False
         GPIO.remove_event_detect(PIN_butt_w)
         GPIO.remove_event_detect(PIN_butt_y)
-        print("w")
+    return()
 
-    return
-
-def interrupt_service_routine_in2():
+def interrupt_service_routine_in2(PIN_butt_y):
+    global tsi_answer
     global quit_loop
     global PIN_butt_w
-    global PIN_butt_y
+    #global PIN_butt_y
     time.sleep(0.005)
     if GPIO.input(PIN_butt_y) == 0:
+        tsi_answer = "y"        
         quit_loop = False
         GPIO.remove_event_detect(PIN_butt_w)
         GPIO.remove_event_detect(PIN_butt_y)
-        print("y")
-        
-    return
+    return()
 
-def interrupt_routine_0pos():
-    global PIN_butt_0pos
+def interrupt_routine_0pos(PIN_butt_0pos):
+    #global PIN_butt_0pos
     time.sleep(0.005)
     if GPIO.input(PIN_butt_0pos) == 1:
         stepper.motor_stop()
@@ -119,8 +120,8 @@ def testing():
     '''
     test_mode_dic = {
         "0": [3, [1, 2], [40, 20, 12]],
-        "1": [7, [3, 5], [40, 32, 24, 20, 16, 14, 12]],
-        "2": [7, [3, 5], [40, 36, 32, 28, 20, 12]]
+        "1": [7, [2, 5], [40, 32, 24, 20, 16, 14, 12]],
+        "2": [7, [2, 5], [40, 36, 32, 28, 20, 12]]
         }
 
     print("    0: user training \n    1: forearm \n    2: thigh\n")
@@ -142,7 +143,7 @@ def testing():
                 #str = ": yellow"
 
 
-            tsi_input()
+            print(tsi_input())
             time.sleep(1)
             i=i+1
 
@@ -290,9 +291,11 @@ def tsi_input():
     - 
     
     '''
+    global tsi_answer
     global PIN_butt_w
     global PIN_butt_y
     global quit_loop
+    tsi_answer = ""
     quit_loop = True
 
     GPIO.add_event_detect(PIN_butt_w, GPIO.FALLING, callback = interrupt_service_routine_in1)
@@ -300,6 +303,8 @@ def tsi_input():
 
     while quit_loop:
         pass
+
+    return(tsi_answer)
 
 
 

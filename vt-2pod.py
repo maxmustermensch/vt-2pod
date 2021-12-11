@@ -73,18 +73,18 @@ stepper = RpiMotorLib.A4988Nema(PIN_dir, PIN_step, PINS_mode, "DRV8825")
 #interrupt routines
 quit_loop = True
 tsi_answer = ""
-tsi_answer_in0 = "w"
-tsi_answer_in1 = "y"
+tsi_answer_opt0 = "w"
+tsi_answer_opt1 = "y"
 
 def interrupt_service_routine_in0(PIN_butt_w):
     global tsi_answer
-    global tsi_answer_in0
+    global tsi_answer_opt0
     global quit_loop
-    #global PIN_butt_w
+    global PIN_butt_w
     global PIN_butt_y  
     time.sleep(0.005)
     if GPIO.input(PIN_butt_w) == 0:
-        tsi_answer = tsi_answer_in0
+        tsi_answer = tsi_answer_opt0
         quit_loop = False
         GPIO.remove_event_detect(PIN_butt_w)
         GPIO.remove_event_detect(PIN_butt_y)
@@ -92,13 +92,13 @@ def interrupt_service_routine_in0(PIN_butt_w):
 
 def interrupt_service_routine_in1(PIN_butt_y):
     global tsi_answer
-    global tsi_answer_in1
+    global tsi_answer_opt1
     global quit_loop
     global PIN_butt_w
-    #global PIN_butt_y
+    global PIN_butt_y
     time.sleep(0.005)
     if GPIO.input(PIN_butt_y) == 0:
-        tsi_answer = tsi_answer_in1
+        tsi_answer = tsi_answer_opt1
         quit_loop = False
         GPIO.remove_event_detect(PIN_butt_w)
         GPIO.remove_event_detect(PIN_butt_y)
@@ -122,6 +122,8 @@ def testing():
     DO:
     - USR sucht den Testmodus aus
     '''
+    global tsi_answer_opt0
+    global tsi_answer_opt1
     test_mode_dic = {
         "0": [3, [1, 2], [40, 20, 12]],
         "1": [7, [2, 5], [40, 32, 24, 20, 16, 14, 12]],
@@ -143,10 +145,10 @@ def testing():
             #save_burst = i
             if n == 0:
                 burst("1", np.array([1, 1, 0]), 1)
-                #save_side_out = "w"
+                #save_side_out = tsi_answer_opt0
             else:
                 burst("1", np.array([1, 0, 1]), 1)
-                #dave_side_out = "y"
+                #dave_side_out = tsi_answer_opt1
 
             time.sleep(0.2)
 

@@ -73,28 +73,32 @@ stepper = RpiMotorLib.A4988Nema(PIN_dir, PIN_step, PINS_mode, "DRV8825")
 #interrupt routines
 quit_loop = True
 tsi_answer = ""
+tsi_answer_in0 = "w"
+tsi_answer_in1 = "y"
 
-def interrupt_service_routine_in1(PIN_butt_w):
+def interrupt_service_routine_in0(PIN_butt_w):
     global tsi_answer
+    global tsi_answer_in0
     global quit_loop
     #global PIN_butt_w
     global PIN_butt_y  
     time.sleep(0.005)
     if GPIO.input(PIN_butt_w) == 0:
-        tsi_answer = "w"
+        tsi_answer = tsi_answer_in0
         quit_loop = False
         GPIO.remove_event_detect(PIN_butt_w)
         GPIO.remove_event_detect(PIN_butt_y)
     return()
 
-def interrupt_service_routine_in2(PIN_butt_y):
+def interrupt_service_routine_in1(PIN_butt_y):
     global tsi_answer
+    global tsi_answer_in1
     global quit_loop
     global PIN_butt_w
     #global PIN_butt_y
     time.sleep(0.005)
     if GPIO.input(PIN_butt_y) == 0:
-        tsi_answer = "y"        
+        tsi_answer = tsi_answer_in1
         quit_loop = False
         GPIO.remove_event_detect(PIN_butt_w)
         GPIO.remove_event_detect(PIN_butt_y)
@@ -132,19 +136,21 @@ def testing():
         i = 0
         get_pos(m)
         print("\n","____postition ", m,"mm____", sep="")
+        #save_pos = m
         time.sleep(2)
         for n in random_array(test_arr[0], test_arr[1]):
             print("burst #", i+1, sep="")
+            #save_burst = i
             if n == 0:
                 burst("1", np.array([1, 1, 0]), 1)
-                #str = ": white"
+                #save_side_out = "w"
             else:
                 burst("1", np.array([1, 0, 1]), 1)
-                #str = ": yellow"
+                #dave_side_out = "y"
 
             time.sleep(0.2)
 
-            print(tsi_input())
+            tsi_input()
             time.sleep(1)
             i=i+1
 
@@ -299,8 +305,8 @@ def tsi_input():
     tsi_answer = ""
     quit_loop = True
 
-    GPIO.add_event_detect(PIN_butt_w, GPIO.FALLING, callback = interrupt_service_routine_in1)
-    GPIO.add_event_detect(PIN_butt_y, GPIO.FALLING, callback = interrupt_service_routine_in2)
+    GPIO.add_event_detect(PIN_butt_w, GPIO.FALLING, callback = interrupt_service_routine_in0)
+    GPIO.add_event_detect(PIN_butt_y, GPIO.FALLING, callback = interrupt_service_routine_in1)
 
     while quit_loop:
         pass

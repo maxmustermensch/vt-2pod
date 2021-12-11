@@ -100,14 +100,14 @@ def interrupt_service_routine_in2(PIN_butt_y):
         GPIO.remove_event_detect(PIN_butt_y)
     return()
 
-def interrupt_routine_0pos(PIN_butt_0pos):
+def interrupt_service_routine_0pos(PIN_butt_0pos):
     #global PIN_butt_0pos
     time.sleep(0.005)
     if GPIO.input(PIN_butt_0pos) == 1:
         stepper.motor_stop()
     return
 
-GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_routine_0pos)
+GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine_0pos)
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
@@ -142,6 +142,7 @@ def testing():
                 burst("1", np.array([1, 0, 1]), 1)
                 #str = ": yellow"
 
+            time.sleep(0.2)
 
             print(tsi_input())
             time.sleep(1)
@@ -179,7 +180,7 @@ def home_pos():
     dir = False
     stps_home_dist = 12   #distance steps back from end stop to 0-position (12mm)
 
-    #GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_routine_0pos)  
+    #GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine_0pos)  
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
     if GPIO.input(PIN_butt_0pos) == 0:

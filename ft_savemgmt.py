@@ -29,6 +29,8 @@ y = np.append(y, [[[40, 4, "out", "w", 1343], [40, 4, "in", "w", 1344]]], axis=0
 
 y = np.append(y, [[[40, 5, "out", "w", 1345], [40, 5, "in", "w", 1346]]], axis=0)
 
+if os.path.isdir(file_path):
+    print("directory already existing. overwrite (0), add to it (1) or cancel(2)?")
 os.mkdir(file_path)
 np.save((file_path + "/" + file_name), y)
 

@@ -315,6 +315,20 @@ def tsi_input():
 
     return(tsi_answer)
 
+def save_mgmt(dir_check, data_arr)
+    '''
+    IN:
+    OUT:
+    DO:
+    '''
+    if dir_check:
+        #check for directory with TSID and ask USR how to deal with it
+        return
+    else:
+        #save data_arr to file
+        return
+        return
+
 
 
 #FUNKCIONENS OPTIONAL___________________________________________________
@@ -329,19 +343,15 @@ def acc():
 
 
 #MAIN___________________________________________________________________
-def main():
+if __name__ == "__main__":
 
+    save_mgmt(True, np.empty(0))
     home_pos()
     testing()
 
- 
+
 
     GPIO.output(PIN_stepper_sleep, GPIO.LOW)
     GPIO.output([PIN_center, PIN_white, PIN_yellow], [0,0,0])
     GPIO.cleanup()
 
-
-
-
-if __name__ == "__main__":
-    main()

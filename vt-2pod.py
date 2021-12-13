@@ -327,7 +327,6 @@ def save_mgmt(dir_check, data_arr)
     else:
         #save data_arr to file
         return
-        return
 
 
 

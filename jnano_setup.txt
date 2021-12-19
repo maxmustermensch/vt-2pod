@@ -24,6 +24,7 @@ git add --all
 git commit -a -m "[msg]"
 	-> [key angeben]
 git push origin master
+git status
 
 sudo apt install python3-pip
 pip3 --version

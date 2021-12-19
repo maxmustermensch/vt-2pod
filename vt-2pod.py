@@ -38,16 +38,16 @@ PIN_white = 19
 PIN_yellow = 13
 
 #define GPIOs butts <3
-PIN_butt_0pos = 6
-PIN_butt_w = 10
-PIN_butt_y = 9
+PIN_butt_home = 6
+PIN_butt_in0 = 10
+PIN_butt_in1 = 9
 
 
 GPIO.setup([PIN_center, PIN_white, PIN_yellow], GPIO.OUT)
 
 #define GPIOs buttons
-GPIO.setup(PIN_butt_0pos, GPIO.IN)
-GPIO.setup([PIN_butt_w, PIN_butt_y], GPIO.IN)
+GPIO.setup(PIN_butt_home, GPIO.IN)
+GPIO.setup([PIN_butt_in0, PIN_butt_in1], GPIO.IN)
 
 
 GPIO.setup(PIN_stepper_sleep, GPIO.OUT)
@@ -76,42 +76,42 @@ tsi_answer = ""
 tsi_answer_opt0 = "w"
 tsi_answer_opt1 = "y"
 
-def interrupt_service_routine_in0(PIN_butt_w):
+def interrupt_service_routine_in0(PIN_butt_in0):
     global tsi_answer
     global tsi_answer_opt0
     global quit_loop
-    global PIN_butt_w
-    global PIN_butt_y  
+    global PIN_butt_in0
+    global PIN_butt_in1  
     time.sleep(0.005)
-    if GPIO.input(PIN_butt_w) == 0:
+    if GPIO.input(PIN_butt_in0) == 0:
         tsi_answer = tsi_answer_opt0
         quit_loop = False
-        GPIO.remove_event_detect(PIN_butt_w)
-        GPIO.remove_event_detect(PIN_butt_y)
+        GPIO.remove_event_detect(PIN_butt_in0)
+        GPIO.remove_event_detect(PIN_butt_in1)
     return()
 
-def interrupt_service_routine_in1(PIN_butt_y):
+def interrupt_service_routine_in1(PIN_butt_in1):
     global tsi_answer
     global tsi_answer_opt1
     global quit_loop
-    global PIN_butt_w
-    global PIN_butt_y
+    global PIN_butt_in0
+    global PIN_butt_in1
     time.sleep(0.005)
-    if GPIO.input(PIN_butt_y) == 0:
+    if GPIO.input(PIN_butt_in1) == 0:
         tsi_answer = tsi_answer_opt1
         quit_loop = False
-        GPIO.remove_event_detect(PIN_butt_w)
-        GPIO.remove_event_detect(PIN_butt_y)
+        GPIO.remove_event_detect(PIN_butt_in0)
+        GPIO.remove_event_detect(PIN_butt_in1)
     return()
 
-def interrupt_service_routine_0pos(PIN_butt_0pos):
-    #global PIN_butt_0pos
+def interrupt_service_routine_0pos(PIN_butt_home):
+    #global PIN_butt_home
     time.sleep(0.005)
-    if GPIO.input(PIN_butt_0pos) == 1:
+    if GPIO.input(PIN_butt_home) == 1:
         stepper.motor_stop()
     return
 
-GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine_0pos)
+GPIO.add_event_detect(PIN_butt_home, GPIO.RISING, callback = interrupt_service_routine_0pos)
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
@@ -188,12 +188,12 @@ def home_pos():
     dir = False
     stps_home_dist = 12   #distance steps back from end stop to 0-position (12mm)
 
-    #GPIO.add_event_detect(PIN_butt_0pos, GPIO.RISING, callback = interrupt_service_routine_0pos)  
+    #GPIO.add_event_detect(PIN_butt_home, GPIO.RISING, callback = interrupt_service_routine_0pos)  
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
-    if GPIO.input(PIN_butt_0pos) == 0:
+    if GPIO.input(PIN_butt_home) == 0:
         time.sleep (0.005)
-        if GPIO.input(PIN_butt_0pos)== 0:
+        if GPIO.input(PIN_butt_home)== 0:
             stepper.motor_go(dir, stp_mode, 1000*fac, 1/fac/speed, False, 0.05)
     else:
         stepper.motor_go(not dir, stp_mode, 10*fac, 1/fac/speed, False, 0.05)
@@ -301,14 +301,14 @@ def tsi_input():
     
     '''
     global tsi_answer
-    global PIN_butt_w
-    global PIN_butt_y
+    global PIN_butt_in0
+    global PIN_butt_in1
     global quit_loop
     tsi_answer = ""
     quit_loop = True
 
-    GPIO.add_event_detect(PIN_butt_w, GPIO.FALLING, callback = interrupt_service_routine_in0)
-    GPIO.add_event_detect(PIN_butt_y, GPIO.FALLING, callback = interrupt_service_routine_in1)
+    GPIO.add_event_detect(PIN_butt_in0, GPIO.FALLING, callback = interrupt_service_routine_in0)
+    GPIO.add_event_detect(PIN_butt_in1, GPIO.FALLING, callback = interrupt_service_routine_in1)
 
     while quit_loop:
         pass

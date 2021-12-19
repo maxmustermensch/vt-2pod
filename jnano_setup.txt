@@ -21,10 +21,10 @@ git config --global user.name 'm[***]ch'
 
 [zur übergabe:] 
 git add --all
-git commit -a -m "[msg]"
+git commit -a -m "<msg>"
 	-> [key angeben]
 git push origin master
-git status
+
 
 sudo apt install python3-pip
 pip3 --version
@@ -36,13 +36,22 @@ pip3 install -U setuptools
 
 sudo pip3 install --upgrade rpimotorlib
 sudo pip3 install --upgrade numpy
-sudo pip3 install --upgrade [...]
+sudo pip3 install --upgrade <...>
+
+
+[git commands:]
+
+git status
+git branch
+git checkout <existing_branch>
+git checkout -b <new_branch>
+
 
 
 [error mgmt:]
 
 [wenn "not owned by current user:]
-sudo -H [...]
+sudo -H <...>
 
 [probleme mit libcurl:]
 sudo apt remove -y libcurl4

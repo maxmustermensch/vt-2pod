@@ -24,7 +24,11 @@ from RpiMotorLib import RpiMotorLib
 
 #GLOBAL_VARIABLES______________________________________________________
 
-GPIO.setmode(GPIO.BCM)
+test_mode_dic = {
+    "0": [3, [1, 2], [40, 20, 12]],
+    "1": [7, [2, 5], [40, 32, 24, 20, 16, 14, 12]],
+    "2": [7, [2, 5], [40, 36, 32, 28, 20, 12]]
+    }
 
 #define GPIOs stepper
 PINS_mode = (8, 7, 11)
@@ -33,21 +37,22 @@ PIN_step = 21
 PIN_stepper_sleep = 24
 
 #define GPIOs vibration motors
-PIN_center = 26
-PIN_white = 19
-PIN_yellow = 13
+PIN_motor_out0 = 26
+PIN_motor_out1 = 19     #w
+PIN_motor_out2 = 13     #y
 
 #define GPIOs butts <3
-PIN_butt_home = 6
-PIN_butt_in0 = 10
-PIN_butt_in1 = 9
+PIN_butt_in0 = 6        #home
+PIN_butt_in1 = 10       #w
+PIN_butt_in2 = 9        #y
 
+GPIO.setmode(GPIO.BCM)
 
-GPIO.setup([PIN_center, PIN_white, PIN_yellow], GPIO.OUT)
+GPIO.setup([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], GPIO.OUT)
 
 #define GPIOs buttons
-GPIO.setup(PIN_butt_home, GPIO.IN)
-GPIO.setup([PIN_butt_in0, PIN_butt_in1], GPIO.IN)
+GPIO.setup(PIN_butt_in0, GPIO.IN)
+GPIO.setup([PIN_butt_in1, PIN_butt_in2], GPIO.IN)
 
 
 GPIO.setup(PIN_stepper_sleep, GPIO.OUT)
@@ -73,45 +78,41 @@ stepper = RpiMotorLib.A4988Nema(PIN_dir, PIN_step, PINS_mode, "DRV8825")
 #interrupt routines
 quit_loop = True
 tsi_answer = ""
-tsi_answer_opt0 = "w"
-tsi_answer_opt1 = "y"
+tsi_answer_opt1 = "w"
+tsi_answer_opt2 = "y"
 
 def interrupt_service_routine_in0(PIN_butt_in0):
-    global tsi_answer
-    global tsi_answer_opt0
-    global quit_loop
-    global PIN_butt_in0
-    global PIN_butt_in1  
+    #global PIN_butt_in0
     time.sleep(0.005)
-    if GPIO.input(PIN_butt_in0) == 0:
-        tsi_answer = tsi_answer_opt0
-        quit_loop = False
-        GPIO.remove_event_detect(PIN_butt_in0)
-        GPIO.remove_event_detect(PIN_butt_in1)
-    return()
+    if GPIO.input(PIN_butt_in0) == 1:
+        stepper.motor_stop()
+    return
 
 def interrupt_service_routine_in1(PIN_butt_in1):
     global tsi_answer
-    global tsi_answer_opt1
     global quit_loop
-    global PIN_butt_in0
-    global PIN_butt_in1
     time.sleep(0.005)
     if GPIO.input(PIN_butt_in1) == 0:
         tsi_answer = tsi_answer_opt1
         quit_loop = False
-        GPIO.remove_event_detect(PIN_butt_in0)
         GPIO.remove_event_detect(PIN_butt_in1)
+        GPIO.remove_event_detect(PIN_butt_in2)
     return()
 
-def interrupt_service_routine_0pos(PIN_butt_home):
-    #global PIN_butt_home
+def interrupt_service_routine_in2(PIN_butt_in2):
+    global tsi_answer
+    global quit_loop
     time.sleep(0.005)
-    if GPIO.input(PIN_butt_home) == 1:
-        stepper.motor_stop()
-    return
+    if GPIO.input(PIN_butt_in2) == 0:
+        tsi_answer = tsi_answer_opt2
+        quit_loop = False
+        GPIO.remove_event_detect(PIN_butt_in1)
+        GPIO.remove_event_detect(PIN_butt_in2)
+    return()
 
-GPIO.add_event_detect(PIN_butt_home, GPIO.RISING, callback = interrupt_service_routine_0pos)
+
+
+GPIO.add_event_detect(PIN_butt_in0, GPIO.RISING, callback = interrupt_service_routine_in0)
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
@@ -122,14 +123,6 @@ def testing():
     DO:
     - USR sucht den Testmodus aus
     '''
-    global tsi_answer_opt0
-    global tsi_answer_opt1
-    test_mode_dic = {
-        "0": [3, [1, 2], [40, 20, 12]],
-        "1": [7, [2, 5], [40, 32, 24, 20, 16, 14, 12]],
-        "2": [7, [2, 5], [40, 36, 32, 28, 20, 12]]
-        }
-
     print("    0: user training \n    1: forearm \n    2: thigh\n")
     test_mode = input("choose test mode: ")
     test_arr = test_mode_dic[test_mode]
@@ -145,10 +138,10 @@ def testing():
             #save_burst = i
             if n == 0:
                 burst("1", np.array([1, 1, 0]), 1)
-                #save_side_out = tsi_answer_opt0
+                #save_side_out = tsi_answer_opt1
             else:
                 burst("1", np.array([1, 0, 1]), 1)
-                #dave_side_out = tsi_answer_opt1
+                #dave_side_out = tsi_answer_opt2
 
             time.sleep(0.2)
 
@@ -188,12 +181,10 @@ def home_pos():
     dir = False
     stps_home_dist = 12   #distance steps back from end stop to 0-position (12mm)
 
-    #GPIO.add_event_detect(PIN_butt_home, GPIO.RISING, callback = interrupt_service_routine_0pos)  
-
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
-    if GPIO.input(PIN_butt_home) == 0:
+    if GPIO.input(PIN_butt_in0) == 0:
         time.sleep (0.005)
-        if GPIO.input(PIN_butt_home)== 0:
+        if GPIO.input(PIN_butt_in0)== 0:
             stepper.motor_go(dir, stp_mode, 1000*fac, 1/fac/speed, False, 0.05)
     else:
         stepper.motor_go(not dir, stp_mode, 10*fac, 1/fac/speed, False, 0.05)
@@ -273,10 +264,10 @@ def burst(burst_index, vib_motor_index, burst_rep):
     for j in range(0,burst_rep,1):
         for i in burst_mode:
             motor_arr = i*vib_motor_index
-            GPIO.output([PIN_center, PIN_white, PIN_yellow], motor_arr)
+            GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], motor_arr)
             time.sleep(burst_duration/len(burst_mode)/1000)
 
-    GPIO.output([PIN_center, PIN_white, PIN_yellow], [0,0,0])
+    GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
 
     return
 
@@ -301,14 +292,11 @@ def tsi_input():
     
     '''
     global tsi_answer
-    global PIN_butt_in0
-    global PIN_butt_in1
-    global quit_loop
     tsi_answer = ""
     quit_loop = True
 
-    GPIO.add_event_detect(PIN_butt_in0, GPIO.FALLING, callback = interrupt_service_routine_in0)
     GPIO.add_event_detect(PIN_butt_in1, GPIO.FALLING, callback = interrupt_service_routine_in1)
+    GPIO.add_event_detect(PIN_butt_in2, GPIO.FALLING, callback = interrupt_service_routine_in2)
 
     while quit_loop:
         pass
@@ -344,13 +332,14 @@ def acc():
 #MAIN___________________________________________________________________
 if __name__ == "__main__":
 
-    save_mgmt(True, np.empty(0))
+    #init_remote()
+    #save_mgmt(True, np.empty(0))
     home_pos()
     testing()
 
 
 
     GPIO.output(PIN_stepper_sleep, GPIO.LOW)
-    GPIO.output([PIN_center, PIN_white, PIN_yellow], [0,0,0])
+    GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
     GPIO.cleanup()
 

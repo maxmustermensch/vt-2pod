@@ -12,15 +12,24 @@ import Jetson.GPIO as GPIO
 import numpy as np
 import os
 import time
+import datetime
 from RpiMotorLib import RpiMotorLib
 
 #USR_VARIABLES_________________________________________________________
 '''
+- TSID
 - burst index
 - burst duration
 - bursts per position
 - enable/disable correct indication
 '''
+
+TSID = "TS001"
+test_mode = "" ###################hier muss noch was geschehen!!!
+timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M')
+
+file_name = TSID +"_"+ test_mode +"_"+ timestamp +".npy"
+file_path = str(TSID)
 
 #GLOBAL_VARIABLES______________________________________________________
 
@@ -126,6 +135,7 @@ def testing():
     print("    0: user training \n    1: forearm \n    2: thigh\n")
     test_mode = input("choose test mode: ")
     test_arr = test_mode_dic[test_mode]
+    save_arr = np.empty((0,2,5))
 
     for m in test_arr[2]:
         i = 0
@@ -138,16 +148,25 @@ def testing():
             #save_burst = i
             if n == 0:
                 burst("1", np.array([1, 1, 0]), 1)
-                #save_side_out = tsi_answer_opt1
+                save_out = tsi_answer_opt1
             else:
                 burst("1", np.array([1, 0, 1]), 1)
-                #dave_side_out = tsi_answer_opt2
+                save_out = tsi_answer_opt2
+
+            burst_tstamp = round(time.time(), 3)
 
             time.sleep(0.2)
 
-            tsi_input()
+            save_in = tsi_input()
+            tsi_tstamp = round(time.time(), 3)
+
+            save_arr_add = np.array([[[m, i, "out", save_out, burst_tstamp], [m, i, "in", save_in, tsi_tstamp]]])
+            save_arr = np.append(save_arr, save_arr_add, axis=0)
+
             time.sleep(1)
             i=i+1
+
+    save_mgmt(save_arr)
 
 def random_array(bursts_per_position, minmax):
     '''
@@ -292,6 +311,7 @@ def tsi_input():
     
     '''
     global tsi_answer
+    global quit_loop
     tsi_answer = ""
     quit_loop = True
 
@@ -303,20 +323,21 @@ def tsi_input():
 
     return(tsi_answer)
 
-def save_mgmt(dir_check, data_arr)
+
+def save_mgmt(data_arr):
     '''
     IN:
     OUT:
     DO:
     '''
-    if dir_check:
-        #check for directory with TSID and ask USR how to deal with it
-        return
-    else:
-        #save data_arr to file
-        return
 
+    #check for directory with TSID
+    if not os.path.isdir(file_path):
+        os.mkdir(file_path)
+        print("new directory " + TSID + " created")
 
+    np.save(os.path.join(file_path, file_name), data_arr)
+    return
 
 #FUNKCIONENS OPTIONAL___________________________________________________
 def acc():

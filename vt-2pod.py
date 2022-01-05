@@ -25,18 +25,14 @@ from RpiMotorLib import RpiMotorLib
 '''
 
 TSID = "TS001"
-test_mode = "" ###################hier muss noch was geschehen!!!
-timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M')
-
-file_name = TSID +"_"+ test_mode +"_"+ timestamp +".npy"
-file_path = str(TSID)
+test_mode_str = ""
 
 #GLOBAL_VARIABLES______________________________________________________
 
 test_mode_dic = {
-    "0": [3, [1, 2], [40, 20, 12]],
-    "1": [7, [2, 5], [40, 32, 24, 20, 16, 14, 12]],
-    "2": [7, [2, 5], [40, 36, 32, 28, 20, 12]]
+    "0": ["user_training", 3, [1, 2], [40, 20, 12]],
+    "1": ["forearm", 7, [2, 5], [40, 32, 24, 20, 16, 14, 12], ],
+    "2": ["thigh", 7, [2, 5], [40, 36, 32, 28, 20, 12]]
     }
 
 #define GPIOs stepper
@@ -132,18 +128,21 @@ def testing():
     DO:
     - USR sucht den Testmodus aus
     '''
-    print("    0: user training \n    1: forearm \n    2: thigh\n")
+    global test_mode_str
+
+    print(f'    0: {test_mode_dic["0"][0]} \n    1: {test_mode_dic["1"][0]} \n    2: {test_mode_dic["2"][0]}\n')
     test_mode = input("choose test mode: ")
     test_arr = test_mode_dic[test_mode]
-    save_arr = np.empty((0,2,5))
+    test_mode_str = test_arr[0]
+    save_arr = np.empty((0,5))
 
-    for m in test_arr[2]:
+    for m in test_arr[3]:
         i = 0
         get_pos(m)
         print("\n","____postition ", m,"mm____", sep="")
         #save_pos = m
         time.sleep(2)
-        for n in random_array(test_arr[0], test_arr[1]):
+        for n in random_array(test_arr[1], test_arr[2]):
             print("burst #", i+1, sep="")
             #save_burst = i
             if n == 0:
@@ -160,7 +159,7 @@ def testing():
             save_in = tsi_input()
             tsi_tstamp = round(time.time(), 3)
 
-            save_arr_add = np.array([[[m, i, "out", save_out, burst_tstamp], [m, i, "in", save_in, tsi_tstamp]]])
+            save_arr_add = np.array([[m, i, save_out, save_in, int(1000*(tsi_tstamp-burst_tstamp))]])
             save_arr = np.append(save_arr, save_arr_add, axis=0)
 
             time.sleep(1)
@@ -331,13 +330,21 @@ def save_mgmt(data_arr):
     DO:
     '''
 
+    timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M')
+    file_name = TSID +"_"+ test_mode_str +"_"+ timestamp +".npy"
+    file_path = str(TSID)
+
     #check for directory with TSID
     if not os.path.isdir(file_path):
         os.mkdir(file_path)
         print("new directory " + TSID + " created")
 
     np.save(os.path.join(file_path, file_name), data_arr)
+
+    print(f'stored in file {os.path.join(file_path, file_name)}')
+
     return
+
 
 #FUNKCIONENS OPTIONAL___________________________________________________
 def acc():

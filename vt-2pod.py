@@ -35,6 +35,17 @@ test_mode_dic = {
     "2": ["thigh", 7, [2, 5], [40, 36, 32, 28, 20, 12]]
     }
 
+burst_duration = 20 #duration of a whole burst in ms
+
+burst_index = "0"
+
+burst_dic = {
+    "0": np.array([1, 1, 1, 1, 1, 1, 1, 1]),
+    "1": np.array([1, 0, 1, 0, 1, 0, 1, 0]),
+    "2": np.array([1, 1, 0, 0, 1, 1, 0, 0]),
+    "3": np.array([1, 1, 1, 1, 0, 0, 0, 0]),
+}
+
 #define GPIOs stepper
 PINS_mode = (8, 7, 11)
 PIN_dir = 20
@@ -136,6 +147,11 @@ def testing():
     test_mode_str = test_arr[0]
     save_arr = np.empty((0,5))
 
+    save_arr_params = np.array([[str(int(time.time())), TSID, test_mode_str, str(burst_duration), str(burst_dic[burst_index])]], dtype=object)
+    save_arr = np.append(save_arr, save_arr_params, axis=0)
+
+    print(save_arr)
+
     for m in test_arr[3]:
         i = 0
         get_pos(m)
@@ -146,15 +162,15 @@ def testing():
             print("burst #", i+1, sep="")
             #save_burst = i
             if n == 0:
-                burst("1", np.array([1, 1, 0]), 1)
+                burst(np.array([1, 1, 0]), 1)
                 save_out = tsi_answer_opt1
             else:
-                burst("1", np.array([1, 0, 1]), 1)
+                burst(np.array([1, 0, 1]), 1)
                 save_out = tsi_answer_opt2
 
             burst_tstamp = round(time.time(), 3)
 
-            time.sleep(0.2)
+            time.sleep(0.05)
 
             save_in = tsi_input()
             tsi_tstamp = round(time.time(), 3)
@@ -165,7 +181,10 @@ def testing():
             time.sleep(1)
             i=i+1
 
+            print(save_arr)
+
     save_mgmt(save_arr)
+    get_pos(24)
 
 def random_array(bursts_per_position, minmax):
     '''
@@ -260,7 +279,7 @@ def get_pos(dist):
     return
 
 
-def burst(burst_index, vib_motor_index, burst_rep):
+def burst(vib_motor_index, burst_rep):
     '''
     IN: auswahl motoren; auswahl des gewuenschten pulsmusters
     OUT:
@@ -268,14 +287,6 @@ def burst(burst_index, vib_motor_index, burst_rep):
     - steuert die motoren im geforderten pulsmuster an
     
     '''
-    burst_duration = 400 #duration of a whole burst in ms
-
-    burst_dic = {
-        "0": np.array([1, 1, 1, 1, 1, 1, 1, 1]),
-        "1": np.array([1, 0, 1, 0, 1, 0, 1, 0]),
-        "2": np.array([1, 1, 0, 0, 1, 1, 0, 0]),
-        "3": np.array([1, 1, 1, 1, 0, 0, 0, 0]),
-    }
 
     burst_mode = burst_dic[burst_index]
 

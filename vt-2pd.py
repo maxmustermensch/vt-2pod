@@ -1,7 +1,7 @@
 '''
-    File name: vt-2pod.py
+    File name: vt-2pd.py
     Author: Max vom Stein
-    Date created: 2021-11-16
+    Date created: 2022-02-02
     Date last modified:
     Python version: 3.6.9
 
@@ -31,8 +31,11 @@ test_mode_str = ""
 
 test_mode_dic = {
     "0": ["user_training", 3, [1, 2], [40, 20, 12]],
-    "1": ["forearm", 10, [2, 5], [40, 32, 24, 20, 16, 14, 12], ],
-    "2": ["thigh", 10, [3, 7], [40, 36, 32, 28, 20, 12]]
+    "1": ["forearm", 7, [2, 5], [40, 32, 24, 20, 16, 14, 12], ],
+    "2": ["thigh", 7, [2, 5], [40, 36, 32, 28, 20, 12]],
+    "3": ["fine", 10, [3, 7], [20, 18, 16, 14, 12, 11]],
+    "ft1": ["func_test", 1, [0, 1], [80, 60, 40, 20, 12, 11]],
+    "ft2": ["func_test", 1, [0, 1], [80, 11]],
     }
 
 burst_duration = 20 #duration of a whole burst in ms
@@ -100,7 +103,7 @@ tsi_answer_opt2 = "y"
 def interrupt_service_routine_in0(PIN_butt_in0):
     #global PIN_butt_in0
     time.sleep(0.005)
-    if GPIO.input(PIN_butt_in0) == 1:
+    if GPIO.input(PIN_butt_in0) == 0:
         stepper.motor_stop()
     return
 
@@ -128,7 +131,7 @@ def interrupt_service_routine_in2(PIN_butt_in2):
 
 
 
-GPIO.add_event_detect(PIN_butt_in0, GPIO.RISING, callback = interrupt_service_routine_in0)
+GPIO.add_event_detect(PIN_butt_in0, GPIO.FALLING, callback = interrupt_service_routine_in0)
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
@@ -154,8 +157,9 @@ def testing():
         i = 0
         get_pos(m)
         print("\n","____postition ", m,"mm____", sep="")
-        #save_pos = m
+        burst(np.array([1, 1, 1]), 3)
         time.sleep(2)
+
         for n in random_array(test_arr[1], test_arr[2]):
             print("burst #", i+1, sep="")
             #save_burst = i
@@ -212,20 +216,23 @@ def home_pos():
     '''
     global stps_is
     dir = False
-    stps_home_dist = 12   #distance steps back from end stop to 0-position (12mm)
+    stps_home_dist = 2   #distance steps back from end-stop to 0-position (11mm)
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
-    if GPIO.input(PIN_butt_in0) == 0:
+
+    if GPIO.input(PIN_butt_in0) == 1:
         time.sleep (0.005)
-        if GPIO.input(PIN_butt_in0)== 0:
+        if GPIO.input(PIN_butt_in0)== 1:
             stepper.motor_go(dir, stp_mode, 1000*fac, 1/fac/speed, False, 0.05)
     else:
         stepper.motor_go(not dir, stp_mode, 10*fac, 1/fac/speed, False, 0.05)
         stepper.motor_go(dir, stp_mode, 15*fac, 1/fac/speed, False, 0.05)
 
+    stepper.motor_go(not dir, stp_mode, 20*fac, 1/fac/(speed/32), False, 0.05)
+    stepper.motor_go(dir, stp_mode, 25*fac, 1/fac/(speed/32), False, 0.05)        
 
     time.sleep(0.2)
-    stepper.motor_go(not dir,stp_mode, stps_home_dist*fac, 1/fac/speed, False, 0.05)
+    stepper.motor_go(not dir,stp_mode, stps_home_dist*fac, 1/fac/(speed/32), False, 0.05)
 
     stps_is = 0
 
@@ -246,11 +253,11 @@ def get_pos(dist):
 
     global stps_is 
     l = 90          #lenght lever
-    dCB = -13       #
+    dCB = -18       #
     stps_p_mm = 25    #steps per mm
-    d0 = 12         #x-axis motor distance at 0-position
-    dmax = 45       #maximum x-axis motor distance
-    h0 = 86.458     #z-axis joint distance at 0-position
+    d0 = 11         #x-axis motor distance at 0-position
+    dmax = 90       #maximum x-axis motor distance
+    h0 = 86.877     #z-axis joint distance at 0-position
 
     if dist < d0:
         print("Error: value lower 0-position")
@@ -260,8 +267,7 @@ def get_pos(dist):
         print("Error: value higher maximum")
         return
 
-    stps_goal = int(-((l**2-((dist)-dCB)**2)**0.5-h0)*stps_p_mm)
-    
+    stps_goal = int(round(-((l**2-((0.5*dist)-dCB)**2)**0.5-h0)*stps_p_mm))    
     
     if stps_goal-stps_is > 0:
         dir = True
@@ -270,7 +276,6 @@ def get_pos(dist):
 
     stepper.motor_go(dir, stp_mode, abs(stps_goal-stps_is)*fac, 1/fac/speed, False, 0.05)
     stps_is = stps_goal
-    
 
     return
 

@@ -5,10 +5,11 @@ from RpiMotorLib import RpiMotorLib
 GPIO_pins = (8, 7, 11)
 direction = 20
 step = 21
+PIN_stepper_sleep = 24
 
 # define motor variables
 spr = 200           # steps per revelation
-travel = 400        # travel in full steps
+travel = 600      # travel in full steps
 speed = 2000       # speed in full steps per second
 mode = "1/32"             # step mode in Full, Half, 1/4, 1/8, 1/16, 1/32
 modedic = {
@@ -21,15 +22,20 @@ modedic = {
 }
 factor = modedic[mode]
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(PIN_stepper_sleep, GPIO.OUT)
+GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
 
 mymotortest = RpiMotorLib.A4988Nema(direction, step, GPIO_pins, "DRV8825")
 
-j = False
+j = True
 
-mymotortest.motor_go(j, mode, int(travel/factor), factor/speed, False, .05)
-
+for i in range(0,1):
+    mymotortest.motor_go(j, mode, int(travel/factor), factor/speed, False, .05)
+    mymotortest.motor_go(not j, mode, int(travel/factor), factor/speed, False, .05)
 
 print(int(travel/factor))
 print(factor/speed)
 
+GPIO.output(PIN_stepper_sleep, GPIO.LOW)
 GPIO.cleanup

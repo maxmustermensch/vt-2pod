@@ -3,7 +3,7 @@ import time
 from random import randint
 
 PIN_in_1 = 10
-PIN_in_2 = 9
+PIN_in_2 = 6
 
 i=0
 
@@ -36,6 +36,10 @@ GPIO.add_event_detect(PIN_in_2, GPIO.FALLING, callback = interrupt_service_routi
 while i!=2:
     pass
 
-
+j=0
+while(j<=100):
+    print(GPIO.input(PIN_in_2))
+    j=j+1
+    time.sleep(0.05)
 
 GPIO.cleanup()

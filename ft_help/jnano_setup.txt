@@ -15,7 +15,7 @@ apt-get install python3-venv
 mkdir projects
 cd projects
 python3 -m venv env01
-source penv01/bin/activate
+source env01/bin/activate
 python
 quit()
 deactivate

@@ -12,8 +12,10 @@ sudo apt-get update
 sudo apt-get install sublime-text
 
 apt-get install python3-venv
-python3 -m venv projects_env01
-source projects_env01/bin/activate
+mkdir projects
+cd projects
+python3 -m venv env01
+source penv01/bin/activate
 python
 quit()
 deactivate

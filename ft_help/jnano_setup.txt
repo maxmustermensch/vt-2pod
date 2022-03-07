@@ -15,6 +15,8 @@ apt-get install python3-venv
 python3 -m venv projects_env01
 source projects_env01/bin/activate
 python
+quit()
+deactivate
 
 sudo apt-get install git
 git --version

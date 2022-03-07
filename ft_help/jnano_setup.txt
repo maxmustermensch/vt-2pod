@@ -24,6 +24,7 @@ sudo apt-get install git
 git --version
 
 git clone https://github.com/maxmustermensch/vt-2pod.git
+git clone https://github.com/maxmustermensch/<...>
 git config --global credential.helper store
 git config --global user.email 'm[***]@gmail.com'
 git config --global user.name 'm[***]ch'

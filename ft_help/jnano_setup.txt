@@ -46,6 +46,7 @@ pip3 install -U setuptools
 
 sudo pip3 install --upgrade rpimotorlib
 sudo pip3 install --upgrade numpy
+sudo pip3 install --upgrade sklearn
 sudo pip3 install --upgrade <...>
 
 

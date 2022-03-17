@@ -215,6 +215,7 @@ def home_pos():
     stps_home_dist = 12   #distance steps back from end stop to 0-position (12mm)
 
     GPIO.output(PIN_stepper_sleep, GPIO.HIGH)
+
     if GPIO.input(PIN_butt_in0) == 0:
         time.sleep (0.005)
         if GPIO.input(PIN_butt_in0)== 0:

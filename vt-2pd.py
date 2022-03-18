@@ -95,7 +95,7 @@ GPIO.setup(PIN_stepper_sleep_sc, GPIO.OUT)
 GPIO.setup(PIN_stepper_sleep_li, GPIO.OUT)
 
 #define stepper_sc
-speed = 2000
+speed_sc = 2000
 stp_mode = "1/32"
 stp_mode_dic = {
     "Full": 1,
@@ -109,9 +109,11 @@ fac = stp_mode_dic[stp_mode]
 stps_is = 0
 dir_sc = False     #False -> closing arms / True -> open
 
+speed_li = 200
+
 stepper_sc = RpiMotorLib.A4988Nema(PIN_dir_sc, PIN_stp_sc, PINS_mode, "DRV8825")
 
-stepper_li = RpiMotorLib.A4988Nema(PIN_dir_li, PIN_stp_li, PINS_mode, "DRV8825")
+stepper_li = RpiMotorLib.A4988Nema(PIN_dir_li, PIN_stp_li, (5, 12, 16), "DRV8825")
 
 #interrupt routines
 quit_loop = True
@@ -131,7 +133,7 @@ def interrupt_service_routine_in1(PIN_butt_in1):
         stepper_li.motor_stop()
     return
 
-def interrupt_service_routine_in1(PIN_butt_in2):
+def interrupt_service_routine_in2(PIN_butt_in2):
     global tsi_answer
     global quit_loop
     time.sleep(0.005)
@@ -142,7 +144,7 @@ def interrupt_service_routine_in1(PIN_butt_in2):
         GPIO.remove_event_detect(PIN_butt_in3)
     return()
 
-def interrupt_service_routine_in2(PIN_butt_in3):
+def interrupt_service_routine_in3(PIN_butt_in3):
     global tsi_answer
     global quit_loop
     time.sleep(0.005)
@@ -265,23 +267,21 @@ def home_pos():
     dir_sc = False     #dir_sc = False -> close
     stps_home_dist = 8 #DIFF   #distance steps back from end-stop to 0-position (11mm)
 
-    #lift()
-
     GPIO.output(PIN_stepper_sleep_sc, GPIO.HIGH)
 
     if GPIO.input(PIN_butt_in0) == 1: #DIFF #sledges not touching
         time.sleep (0.005)
         if GPIO.input(PIN_butt_in0)== 1: #DIFF
-            stepper_sc.motor_go(dir_sc, stp_mode, 1000*fac, 1/fac/speed, False, 0.05) #close
+            stepper_sc.motor_go(dir_sc, stp_mode, 1000*fac, 1/fac/speed_sc, False, 0.05) #close
     else: #sledges touching
-        stepper_sc.motor_go(not dir_sc, stp_mode, 10*fac, 1/fac/speed, False, 0.05) #open
-        stepper_sc.motor_go(dir_sc, stp_mode, 15*fac, 1/fac/speed, False, 0.05) #close
+        stepper_sc.motor_go(not dir_sc, stp_mode, 10*fac, 1/fac/speed_sc, False, 0.05) #open
+        stepper_sc.motor_go(dir_sc, stp_mode, 15*fac, 1/fac/speed_sc, False, 0.05) #close
 
-    stepper_sc.motor_go(not dir_sc, stp_mode, 20*fac, 1/fac/(speed/32), False, 0.05) #DIFF #open
-    stepper_sc.motor_go(dir_sc, stp_mode, 25*fac, 1/fac/(speed/32), False, 0.05)     #DIFF #close
+    stepper_sc.motor_go(not dir_sc, stp_mode, 20*fac, 1/fac/(speed_sc/32), False, 0.05) #DIFF #open
+    stepper_sc.motor_go(dir_sc, stp_mode, 25*fac, 1/fac/(speed_sc/32), False, 0.05)     #DIFF #close
 
     time.sleep(0.2)
-    stepper_sc.motor_go(not dir_sc,stp_mode, stps_home_dist*fac, 1/fac/(speed/32), False, 0.05) #open
+    stepper_sc.motor_go(not dir_sc,stp_mode, stps_home_dist*fac, 1/fac/(speed_sc/32), False, 0.05) #open
 
     stps_is = 0
 
@@ -292,21 +292,22 @@ def lift():
     dir_li = False      #dir_li = False ->
     GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
 
-    if GPIO.input(PIN_butt_in1) == 1: #button lift not pressed
-        time.sleep (0.005)
-        if GPIO.input(PIN_butt_in1)== 1: 
-            stepper_li.motor_go(dir_li, stp_mode, 200*fac, 1/fac/speed, False, 0.05) 
-    else: #button lift  pressed
-        stepper_li.motor_go(not dir_li, stp_mode, 10*fac, 1/fac/speed, False, 0.05) 
-        stepper_li.motor_go(dir_li, stp_mode, 15*fac, 1/fac/speed, False, 0.05) 
+    stepper_li.motor_go(dir_li, stp_mode, 100*fac, 1/fac/speed_li, False, 0.05)
 
-    stepper_li.motor_go(not dir_li, stp_mode, 20*fac, 1/fac/(speed/32), False, 0.05)
-    stepper_li.motor_go(dir_li, stp_mode, 25*fac, 1/fac/(speed/32), False, 0.05)  
+#    if GPIO.input(PIN_butt_in1) == 1: #button lift not pressed
+#        time.sleep (0.005)
+#        if GPIO.input(PIN_butt_in1)== 1: 
+#            stepper_li.motor_go(dir_li, stp_mode, 200*fac, 1/fac/speed_sc, False, 0.05) 
+#    else: #button lift  pressed
+#        stepper_li.motor_go(not dir_li, stp_mode, 10*fac, 1/fac/speed_sc, False, 0.05) 
+#        stepper_li.motor_go(dir_li, stp_mode, 15*fac, 1/fac/speed_sc, False, 0.05) 
+#
+#    stepper_li.motor_go(not dir_li, stp_mode, 20*fac, 1/fac/(speed_sc/32), False, 0.05)
+#    stepper_li.motor_go(dir_li, stp_mode, 25*fac, 1/fac/(speed_sc/32), False, 0.05)  
+#
+#    time.sleep(0.2)
+#    stepper_li.motor_go(not dir_li,stp_mode, stps_home_dist*fac, 1/fac/(speed_sc/32), False, 0.05)
 
-    time.sleep(0.2)
-    stepper_li.motor_go(not dir_li,stp_mode, stps_home_dist*fac, 1/fac/(speed/32), False, 0.05)
-
-    stps_is = 0
 
     return
 
@@ -343,7 +344,7 @@ def get_pos(dist):
     else:  
         dir_sc = False
 
-    stepper_sc.motor_go(dir_sc, stp_mode, abs(stps_goal-stps_is)*fac, 1/fac/speed, False, 0.05)
+    stepper_sc.motor_go(dir_sc, stp_mode, abs(stps_goal-stps_is)*fac, 1/fac/speed_sc, False, 0.05)
     stps_is = stps_goal
 
     return
@@ -395,8 +396,8 @@ def tsi_input():
     tsi_answer = ""
     quit_loop = True
 
-    GPIO.add_event_detect(PIN_butt_in2, GPIO.FALLING, callback = interrupt_service_routine_in1)
-    GPIO.add_event_detect(PIN_butt_in3, GPIO.FALLING, callback = interrupt_service_routine_in2)
+    GPIO.add_event_detect(PIN_butt_in2, GPIO.FALLING, callback = interrupt_service_routine_in2)
+    GPIO.add_event_detect(PIN_butt_in3, GPIO.FALLING, callback = interrupt_service_routine_in3)
 
     while quit_loop:
         pass
@@ -443,8 +444,7 @@ if __name__ == "__main__":
 
     try:
         #init_remote()
-        #GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
-        #stepper_li.motor_go(not dir_sc, stp_mode, 1000*fac, 1/fac/(speed), False, 0.05)
+        lift()
         home_pos()
         testing()
     except:
@@ -452,9 +452,9 @@ if __name__ == "__main__":
         GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
         GPIO.cleanup()
 
- #   GPIO.output([PIN_stepper_sleep_sc, PIN_stepper_sleep_li], GPIO.LOW)
- #   GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
- #   GPIO.cleanup()
+    GPIO.output([PIN_stepper_sleep_sc, PIN_stepper_sleep_li], GPIO.LOW)
+    GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
+    GPIO.cleanup()
 
     psi.plot(muRef=10, sigmaRef=1, lapseRef=0.02, guessRef=0.5)
 

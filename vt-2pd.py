@@ -96,7 +96,7 @@ GPIO.setup(PIN_stepper_sleep_li, GPIO.OUT)
 
 #define stepper_sc
 speed_sc = 2000
-stp_mode = "1/32"
+stp_mode = "1/16"
 stp_mode_dic = {
     "Full": 1,
     "Half": 2,
@@ -113,7 +113,7 @@ speed_li = 200
 
 stepper_sc = RpiMotorLib.A4988Nema(PIN_dir_sc, PIN_stp_sc, PINS_mode, "DRV8825")
 
-stepper_li = RpiMotorLib.A4988Nema(PIN_dir_li, PIN_stp_li, (5, 12, 16), "DRV8825")
+stepper_li = RpiMotorLib.A4988Nema(PIN_dir_li, PIN_stp_li, PINS_mode, "DRV8825")
 
 #interrupt routines
 quit_loop = True
@@ -129,7 +129,7 @@ def interrupt_service_routine_in0(PIN_butt_in0):
 
 def interrupt_service_routine_in1(PIN_butt_in1):
     time.sleep(0.005)
-    if GPIO.input(PIN_butt_in1) == 0: #DIFF
+    if GPIO.input(PIN_butt_in1) == 1: #DIFF
         stepper_li.motor_stop()
     return
 
@@ -159,7 +159,7 @@ def interrupt_service_routine_in3(PIN_butt_in3):
 
 GPIO.add_event_detect(PIN_butt_in0, GPIO.FALLING, callback = interrupt_service_routine_in0) #DIFF
 
-GPIO.add_event_detect(PIN_butt_in1, GPIO.FALLING, callback = interrupt_service_routine_in1)
+#GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1)
 
 #FUNCTIONS ESSENTIAL____________________________________________________
 
@@ -199,7 +199,11 @@ def testing():
         print (f'___________\n\nTrial {i+1} of {test_arr[1]}')
         print (psi.xCurrent)
 
+
+
         get_pos(psi.xCurrent)
+
+        li_down()
 
         time.sleep(1)
 
@@ -217,6 +221,8 @@ def testing():
 
         save_in = tsi_input()
         tsi_tstamp = round(time.time(), 3)
+
+        li_up()
 
         save_arr_add = np.array([[m, i, save_out, save_in, int(1000*(tsi_tstamp-burst_tstamp))]])
         save_arr = np.append(save_arr, save_arr_add, axis=0)
@@ -254,7 +260,7 @@ def random_array(arr_len):
     return(rand_array)
 
 
-def home_pos():
+def home_pos_sc():
     '''
     IN:
     OUT:
@@ -265,7 +271,7 @@ def home_pos():
     global stps_is
     global dir_sc
     dir_sc = False     #dir_sc = False -> close
-    stps_home_dist = 8 #DIFF   #distance steps back from end-stop to 0-position (11mm)
+    stps_home_dist_sc = 8 #DIFF   #distance steps back from end-stop to 0-position (11mm)
 
     GPIO.output(PIN_stepper_sleep_sc, GPIO.HIGH)
 
@@ -275,39 +281,71 @@ def home_pos():
             stepper_sc.motor_go(dir_sc, stp_mode, 1000*fac, 1/fac/speed_sc, False, 0.05) #close
     else: #sledges touching
         stepper_sc.motor_go(not dir_sc, stp_mode, 10*fac, 1/fac/speed_sc, False, 0.05) #open
+        time.sleep(0.1)
         stepper_sc.motor_go(dir_sc, stp_mode, 15*fac, 1/fac/speed_sc, False, 0.05) #close
 
+    time.sleep(0.1) 
     stepper_sc.motor_go(not dir_sc, stp_mode, 20*fac, 1/fac/(speed_sc/32), False, 0.05) #DIFF #open
+    time.sleep(0.1)
     stepper_sc.motor_go(dir_sc, stp_mode, 25*fac, 1/fac/(speed_sc/32), False, 0.05)     #DIFF #close
 
     time.sleep(0.2)
-    stepper_sc.motor_go(not dir_sc,stp_mode, stps_home_dist*fac, 1/fac/(speed_sc/32), False, 0.05) #open
+    stepper_sc.motor_go(not dir_sc,stp_mode, stps_home_dist_sc*fac, 1/fac/(speed_sc/32), False, 0.05) #open
 
     stps_is = 0
 
     return
 
-def lift():
+def home_pos_li():
 
-    dir_li = False      #dir_li = False ->
+    stps_home_dist_li = 200
+
+    dir_li = False      #dir_li = False -> lifter going down
     GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
+    GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1)
 
-    stepper_li.motor_go(dir_li, stp_mode, 100*fac, 1/fac/speed_li, False, 0.05)
+    if GPIO.input(PIN_butt_in1) == 1: #button lift not pressed
+        time.sleep (0.005)
+        if GPIO.input(PIN_butt_in1)== 1:
+            stepper_li.motor_go(not dir_li, stp_mode, 200*fac, 1/fac/speed_sc, False, 0.05) #up
+            stepper_li.motor_go(dir_li, stp_mode, 210*fac, 1/fac/speed_sc, False, 0.05) #down
+ 
+    else: #button lift  pressed
+        stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 1/fac/speed_sc, False, 0.05) #down
 
-#    if GPIO.input(PIN_butt_in1) == 1: #button lift not pressed
-#        time.sleep (0.005)
-#        if GPIO.input(PIN_butt_in1)== 1: 
-#            stepper_li.motor_go(dir_li, stp_mode, 200*fac, 1/fac/speed_sc, False, 0.05) 
-#    else: #button lift  pressed
-#        stepper_li.motor_go(not dir_li, stp_mode, 10*fac, 1/fac/speed_sc, False, 0.05) 
-#        stepper_li.motor_go(dir_li, stp_mode, 15*fac, 1/fac/speed_sc, False, 0.05) 
-#
-#    stepper_li.motor_go(not dir_li, stp_mode, 20*fac, 1/fac/(speed_sc/32), False, 0.05)
-#    stepper_li.motor_go(dir_li, stp_mode, 25*fac, 1/fac/(speed_sc/32), False, 0.05)  
-#
-#    time.sleep(0.2)
-#    stepper_li.motor_go(not dir_li,stp_mode, stps_home_dist*fac, 1/fac/(speed_sc/32), False, 0.05)
+    time.sleep(0.1)
 
+    stepper_li.motor_go(not dir_li, stp_mode, stps_home_dist_li*fac, 1/fac/(speed_sc), False, 0.05) #up
+
+    GPIO.remove_event_detect(PIN_butt_in1)
+
+def li_up():
+
+    stps_up_li = 200
+
+    dir_li = False      #dir_li = False -> lifter going down
+    GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
+    GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1)
+
+    stepper_li.motor_go(not dir_li, stp_mode, stps_up_li*fac, 1/fac/speed_li, False, 0.05) #up
+
+    GPIO.remove_event_detect(PIN_butt_in1)
+
+    return
+
+def li_down():
+
+    dir_li = False      #dir_li = False -> lifter going down
+    GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
+    GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1)
+
+    stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 1/fac/speed_li, False, 0.05) #down
+    time.sleep(0.1)
+    stepper_li.motor_go(not dir_li, stp_mode, 20*fac, 1/fac/speed_li, False, 0.05) #up
+    time.sleep(0.1)
+    stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 2/fac/speed_li, False, 0.05) #down slow
+
+    GPIO.remove_event_detect(PIN_butt_in1)
 
     return
 
@@ -444,8 +482,8 @@ if __name__ == "__main__":
 
     try:
         #init_remote()
-        lift()
-        home_pos()
+        home_pos_li()
+        home_pos_sc()
         testing()
     except:
         GPIO.output([PIN_stepper_sleep_sc, PIN_stepper_sleep_li], GPIO.LOW)

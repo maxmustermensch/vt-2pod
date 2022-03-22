@@ -91,7 +91,8 @@ def pf(parameters, psyfun='cGauss'):
         p = ones - np.exp(-np.power((np.multiply(ones, 10.0)), (np.multiply(sigma, (np.subtract(x, mu))))))
     elif psyfun == 'Weibull':
         # F(x; mu, sigma)
-        p = 1 - np.exp(-(np.divide(x, mu)) ** sigma)
+        #p = 1 - np.exp(-(np.divide(x, mu)) ** sigma) ->CHANGE
+        p = 1 - 2 ** (-(np.divide(x, mu)) ** sigma)
     else:
         # flat line if no psychometric function is specified
         p = np.ones(np.shape(mu))
@@ -532,8 +533,8 @@ class Psi:
             poststd = np.sqrt(
                 np.sum(self.likelihood ** 2 * self.pdfND, axis=(0, 1, 2, 3)) - postmean ** 2)  # std
 
-        plt.figure(figsize=(8, 7))
-        plt.subplot(2, 2, 1)
+        fig = plt.figure(figsize=(8, 7))
+        subplt1 = plt.subplot(2, 2, 1)
         #if ref:
         #    plt.plot(self.stimRange, curve, 'k', label='True')
         plt.plot(self.stimRange, postmean, 'k', label='Estimated')
@@ -544,6 +545,9 @@ class Psi:
         #plt.legend(loc='upper left', frameon=False, fontsize=10)
         plt.xlabel('x')
         plt.ylabel('p(response)')
+        subplt1.set(xlim=[0,self.stimRange[-1]],ylim=[0.5,1]) 
+        plt.axhline(y=0.5, color='black', linestyle=':')
+        plt.axhline(y=0.95, color='black', linestyle='--')
 
         plt.subplot(2, 2, 2)
         plt.plot(self.threshold, self.pThreshold, 'k')
@@ -563,7 +567,7 @@ class Psi:
         #plt.axvline(lapseRef, color='k')
         #plt.axvline(self.eLapse, color='k', linestyle='dashed')
 
-        plt.subplot(2, 2, 3)
+        subplt3 = plt.subplot(2, 2, 3)
         i = 0
         for r in self.response:
 
@@ -572,16 +576,17 @@ class Psi:
             else:
                 plt.plot(self.countTrial[i], self.stim[i], 'xk', label='test', markersize=5)
             i = i+1
-        
+        subplt3.set(ylim=[0,self.stimRange[-1]]) 
+
 
         plt.subplot(2, 2, 4)
-        plt.plot(self.slope, self.pSlope, 'k')
-        plt.xlabel(r'$\sigma$')
-        plt.ylabel('Posterior Probability')
-        plt.title('Posterior ' + r'$\sigma$=' + str(np.round(self.eSlope, 3)) +
-                  r' $\pm$ ' + str(np.round(self.stdSlope, 3)))
-        plt.axvline(sigmaRef, color='k')
-        plt.axvline(self.eSlope, color='k', linestyle='dashed')
+        plt.plot(self.guessRate, self.pGuess, 'k')
+        plt.xlabel(r'$\gamma$')
+        #plt.ylabel('Posterior Probability')
+        #plt.title('Posterior ' + r'$\sigma$=' + str(np.round(self.eSlope, 3)) +
+        #          r' $\pm$ ' + str(np.round(self.stdSlope, 3)))
+        #plt.axvline(sigmaRef, color='k')
+        #plt.axvline(self.eSlope, color='k', linestyle='dashed')
         plt.tight_layout()
         if save:
             plt.savefig('PsiCurve.png')

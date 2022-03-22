@@ -42,8 +42,8 @@ test_mode_str = ""
 
 test_mode_dic = {
 #    "bla": ["blabla", n_trials, [min_pos, max_pos, grid_pos]],
-    "0": ["user_training", 5, [0, 45, 19]],
-    "1": ["forearm", 20, [11, 45, 17]],
+    "0": ["user_training", 1, [2.5, 45, 18]],
+    "1": ["forearm", 20, [2.5, 45, 18]],
     "2": ["thigh",],
     "3": ["fine",],
     }
@@ -96,7 +96,7 @@ GPIO.setup(PIN_stepper_sleep_li, GPIO.OUT)
 
 #define stepper_sc
 speed_sc = 2000
-stp_mode = "1/16"
+stp_mode = "1/32"
 stp_mode_dic = {
     "Full": 1,
     "Half": 2,
@@ -108,8 +108,9 @@ stp_mode_dic = {
 fac = stp_mode_dic[stp_mode]
 stps_is = 0
 dir_sc = False     #False -> closing arms / True -> open
+d0 = 0
 
-speed_li = 200
+speed_li = 2000
 
 stepper_sc = RpiMotorLib.A4988Nema(PIN_dir_sc, PIN_stp_sc, PINS_mode, "DRV8825")
 
@@ -205,6 +206,8 @@ def testing():
 
         li_down()
 
+        burst(np.array([1, 1, 1]), 4)
+
         time.sleep(1)
 
 
@@ -237,7 +240,7 @@ def testing():
         i=i+1
 
     save_mgmt(save_arr)
-    get_pos(24)
+    get_pos(d0)
 
 
 def random_array(arr_len):
@@ -339,11 +342,11 @@ def li_down():
     GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
     GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1)
 
-    stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 1/fac/speed_li, False, 0.05) #down
-    time.sleep(0.1)
-    stepper_li.motor_go(not dir_li, stp_mode, 20*fac, 1/fac/speed_li, False, 0.05) #up
-    time.sleep(0.1)
-    stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 2/fac/speed_li, False, 0.05) #down slow
+    stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 2/fac/speed_li, False, 0.05) #down
+    #time.sleep(0.1)
+    #stepper_li.motor_go(not dir_li, stp_mode, 20*fac, 1/fac/speed_li, False, 0.05) #up
+    #time.sleep(0.1)
+    #stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 2/fac/speed_li, False, 0.05) #down slow
 
     GPIO.remove_event_detect(PIN_butt_in1)
 
@@ -358,14 +361,14 @@ def get_pos(dist):
         - berechnung benoetigter steps fuer gewuenschten stellweg
 
     '''
-
+    global d0
     global stps_is 
     l = 90          #lenght lever
-    dCB = -18 #DIFF       #
+    dCB = -25 #DIFF       #
     stps_p_mm = 25    #steps per mm
-    d0 = 11 #DIFF         #x-axis motor distance at 0-position
+    d0 = 2 #DIFF         #x-axis motor distance at 0-position
     dmax = 90 #DIFF       #maximum x-axis motor distance
-    h0 = 86.877 #DIFF     #z-axis joint distance at 0-position
+    h0 = 86.163 #DIFF     #z-axis joint distance at 0-position
 
     if dist < d0:
         print("Error: value lower 0-position")

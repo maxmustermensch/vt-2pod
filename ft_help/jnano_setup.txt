@@ -57,6 +57,9 @@ git branch
 git checkout <existing_branch>
 git checkout -b <new_branch>
 
+[PWM:]
+sudo /opt/nvidia/jetson-io/jetson-io.py
+	-> PIN 32 und 33 zu PWM output (D12, D13)
 
 
 [error mgmt:]

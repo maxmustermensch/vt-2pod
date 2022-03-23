@@ -78,7 +78,7 @@ PIN_stepper_sleep_li = 18
 
 #define GPIOs vibration motors
 PIN_motor_out0 = 26
-PIN_motor_out1 = 19     #w
+PIN_motor_out1 = 12     #w #DIFF
 PIN_motor_out2 = 13     #y
 
 #define GPIOs butts <3
@@ -93,6 +93,13 @@ GPIO.setup([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], GPIO.OUT)
 GPIO.setup([PIN_butt_in0, PIN_butt_in1, PIN_butt_in2, PIN_butt_in3], GPIO.IN)
 GPIO.setup(PIN_stepper_sleep_sc, GPIO.OUT)
 GPIO.setup(PIN_stepper_sleep_li, GPIO.OUT)
+
+PWM_f = 100   #frequency PWM
+
+#vib0 =
+vib1 = GPIO.PWM(12,PWM_f)
+vib2 = GPIO.PWM(13,PWM_f)
+
 
 #define stepper_sc
 speed_sc = 2000
@@ -391,7 +398,7 @@ def get_pos(dist):
     return
 
 
-def burst(vib_motor_index, burst_rep):
+def burst(vib_motor_index, burst_rep, intesity_variation = False):
     '''
     IN: auswahl motoren; auswahl des gewuenschten pulsmusters
     OUT:
@@ -400,15 +407,24 @@ def burst(vib_motor_index, burst_rep):
     
     '''
 
+    #calib_vib0 in % duty cycle
+    calib_vib1 = 90
+    calib_vib2 = 80
+
     burst_mode = burst_dic[burst_index]
 
-    for j in range(0,burst_rep,1):
+    for j in range(0, burst_rep, 1):
         for i in burst_mode:
-            motor_arr = i*vib_motor_index
-            GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], motor_arr)
-            time.sleep(burst_duration/len(burst_mode)/1000)
+            #motor_arr = i*vib_motor_index
+            #GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], motor_arr)
+            if (i*vib_motor_index[1]): vib1.start(calib_vib1)
+            if (i*vib_motor_index[2]): vib1.start(calib_vib2)
 
-    GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
+            time.sleep(burst_duration/len(burst_mode)/1000)
+            vib1.stop()
+            vib2.stop()
+
+    #GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
 
     return
 
@@ -485,17 +501,15 @@ if __name__ == "__main__":
 
     try:
         #init_remote()
+        #burst()
         home_pos_li()
         home_pos_sc()
         testing()
-    except:
+        
+    finally:
         GPIO.output([PIN_stepper_sleep_sc, PIN_stepper_sleep_li], GPIO.LOW)
-        GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
+        #GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
         GPIO.cleanup()
-
-    GPIO.output([PIN_stepper_sleep_sc, PIN_stepper_sleep_li], GPIO.LOW)
-    GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
-    GPIO.cleanup()
 
     psi.plot(muRef=10, sigmaRef=1, lapseRef=0.02, guessRef=0.5)
 

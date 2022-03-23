@@ -590,4 +590,21 @@ class Psi:
         plt.tight_layout()
         if save:
             plt.savefig('PsiCurve.png')
+
+        print(f'______________________\n\n' + \
+              f'max p gamma = {str(round(self.guessRate[np.argmax(self.pGuess)], 2))}\n' + \
+              f'max p delta = {str(round(self.lapseRate[0], 2))}\n' + \
+              f'max p a = {str(round(self.threshold[np.argmax(self.pThreshold)], 2))}\n' + \
+              f'max p b = {str(round(self.slope[np.argmax(self.pSlope)], 2))}')
+
+        print(f'______________________\n\n' + \
+              f'est gamma = {str(round(self.eGuess, 2))}\n' + \
+              f'est delta = {str(round(self.eLapse, 2))}\n' + \
+              f'est a = {str(round(self.eThreshold, 2))}\n' + \
+              f'est b = {str(round(self.eSlope, 2))}')
+
         plt.show()
+
+
+
+

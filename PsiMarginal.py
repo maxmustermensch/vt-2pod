@@ -591,6 +591,16 @@ class Psi:
         if save:
             plt.savefig('PsiCurve.png')
 
+        #------------------ max ergaenzungen:
+
+        diff_arr = np.absolute(postmean-.95)
+
+        index_thresh95 = np.argmin(diff_arr)
+
+        if diff_arr[index_thresh95] <= .03: thresh95 = self.stimRange[index_thresh95]
+        else: thresh95 = 'not defined'
+
+
         print(f'______________________\n\n' + \
               f'max p gamma = {str(round(self.guessRate[np.argmax(self.pGuess)], 2))}\n' + \
               f'max p delta = {str(round(self.lapseRate[0], 2))}\n' + \
@@ -602,6 +612,9 @@ class Psi:
               f'est delta = {str(round(self.eLapse, 2))}\n' + \
               f'est a = {str(round(self.eThreshold, 2))}\n' + \
               f'est b = {str(round(self.eSlope, 2))}')
+
+        print(f'______________________\n\n' + \
+              f'95% threshold = {thresh95}')
 
         plt.show()
 

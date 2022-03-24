@@ -48,7 +48,7 @@ test_mode_dic = {
     "3": ["fine",],
     }
 
-burst_duration = 100 #duration of a whole burst in ms
+burst_duration = 200 #duration of a whole burst in ms
 burst_index = "0"
 burst_dic = {
     "0": np.array([1, 1, 1, 1, 1, 1, 1, 1]),
@@ -219,10 +219,10 @@ def testing():
 
 
         if m == 0:
-            burst(np.array([1, 1, 0]), 1)
+            burst(np.array([1, 1, 0]), 1, True)
             save_out = tsi_answer_opt1
         else:
-            burst(np.array([1, 0, 1]), 1)
+            burst(np.array([1, 0, 1]), 1, True)
             save_out = tsi_answer_opt2
 
         burst_tstamp = round(time.time(), 3)
@@ -408,21 +408,30 @@ def burst(vib_motor_index, burst_rep, intesity_variation = False):
     '''
 
     #calib_vib0 in % duty cycle
-    calib_vib1 = 90
-    calib_vib2 = 80
+    dc_calib_vib1 = 90
+    dc_calib_vib2 = 55
+
+    if intesity_variation:
+        lo_hi_vib1 = np.round(st.norm.interval(alpha=.99, loc = dc_calib_vib1, scale=3),0)
+        lo_hi_vib2 = np.round(st.norm.interval(alpha=.99, loc = dc_calib_vib2, scale=3),0)
+
+        dc_calib_vib1 = np.random.randint(lo_hi_vib1[0], lo_hi_vib1[1], 1, int)
+        dc_calib_vib2 = np.random.randint(lo_hi_vib2[0], lo_hi_vib2[1], 1, int)
+
 
     burst_mode = burst_dic[burst_index]
 
     for j in range(0, burst_rep, 1):
         for i in burst_mode:
-            #motor_arr = i*vib_motor_index
-            #GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], motor_arr)
-            if (i*vib_motor_index[1]): vib1.start(calib_vib1)
-            if (i*vib_motor_index[2]): vib1.start(calib_vib2)
+
+            if (i*vib_motor_index[1]): vib1.start(dc_calib_vib1)
+            if (i*vib_motor_index[2]): vib2.start(dc_calib_vib2)
 
             time.sleep(burst_duration/len(burst_mode)/1000)
             vib1.stop()
             vib2.stop()
+
+
 
     #GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
 
@@ -501,7 +510,16 @@ if __name__ == "__main__":
 
     try:
         #init_remote()
-        #burst()
+
+        #--------------------
+        #get_pos(40)
+        #for i in range(0,10):
+        #    burst(np.array([1, 0, 1]), 1, True)
+        #    time.sleep(1)
+        #    burst(np.array([1, 1, 0]), 1, True)
+        #    time.sleep(1)
+        #--------------------
+
         home_pos_li()
         home_pos_sc()
         testing()

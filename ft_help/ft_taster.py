@@ -2,8 +2,8 @@ import Jetson.GPIO as GPIO
 import time
 from random import randint
 
-PIN_in_1 = 6
-PIN_in_2 = 23
+PIN_in_1 = 10
+PIN_in_2 = 9
 
 i=0
 

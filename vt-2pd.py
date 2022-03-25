@@ -42,7 +42,7 @@ test_mode_str = ""
 
 test_mode_dic = {
 #    "bla": ["blabla", n_trials, [min_pos, max_pos, grid_pos]],
-    "0": ["user_training", 1, [2.5, 45, 18]],
+    "0": ["user_training", 5, [2.5, 45, 18]],
     "1": ["forearm", 20, [2.5, 45, 18]],
     "2": ["thigh",],
     "3": ["fine",],
@@ -317,8 +317,8 @@ def home_pos_li():
     if GPIO.input(PIN_butt_in1) == 1: #button lift not pressed
         time.sleep (0.005)
         if GPIO.input(PIN_butt_in1)== 1:
-            stepper_li.motor_go(not dir_li, stp_mode, 200*fac, 1/fac/speed_sc, False, 0.05) #up
-            stepper_li.motor_go(dir_li, stp_mode, 210*fac, 1/fac/speed_sc, False, 0.05) #down
+            stepper_li.motor_go(not dir_li, stp_mode, 400*fac, 1/fac/speed_sc, False, 0.05) #up
+            stepper_li.motor_go(dir_li, stp_mode, 450*fac, 1/fac/speed_sc, False, 0.05) #down
  
     else: #button lift  pressed
         stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 1/fac/speed_sc, False, 0.05) #down
@@ -335,11 +335,11 @@ def li_up():
 
     dir_li = False      #dir_li = False -> lifter going down
     GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
-    GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1)
+    #GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1) -> NOTWENDIG?
 
     stepper_li.motor_go(not dir_li, stp_mode, stps_up_li*fac, 1/fac/speed_li, False, 0.05) #up
 
-    GPIO.remove_event_detect(PIN_butt_in1)
+    #GPIO.remove_event_detect(PIN_butt_in1) -> NOTWENDIG?
 
     return
 
@@ -349,11 +349,12 @@ def li_down():
     GPIO.output(PIN_stepper_sleep_li, GPIO.HIGH)
     GPIO.add_event_detect(PIN_butt_in1, GPIO.RISING, callback = interrupt_service_routine_in1)
 
+    if GPIO.input(PIN_butt_in1) == 1: #button lift not pressed
+        time.sleep (0.005)
+    if GPIO.input(PIN_butt_in1)== 1:
+        stepper_li.motor_go(not dir_li, stp_mode, 200*fac, 1/fac/speed_sc, False, 0.05) #up
+
     stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 2/fac/speed_li, False, 0.05) #down
-    #time.sleep(0.1)
-    #stepper_li.motor_go(not dir_li, stp_mode, 20*fac, 1/fac/speed_li, False, 0.05) #up
-    #time.sleep(0.1)
-    #stepper_li.motor_go(dir_li, stp_mode, 1000*fac, 2/fac/speed_li, False, 0.05) #down slow
 
     GPIO.remove_event_detect(PIN_butt_in1)
 
@@ -409,7 +410,7 @@ def burst(vib_motor_index, burst_rep, intesity_variation = False):
 
     #calib_vib0 in % duty cycle
     dc_calib_vib1 = 90
-    dc_calib_vib2 = 55
+    dc_calib_vib2 = 60
 
     if intesity_variation:
         lo_hi_vib1 = np.round(st.norm.interval(alpha=.99, loc = dc_calib_vib1, scale=3),0)

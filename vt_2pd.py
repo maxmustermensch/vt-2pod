@@ -15,6 +15,7 @@ import PsiMarginal
 import os
 import time
 import datetime
+import shutil
 from RpiMotorLib import RpiMotorLib
 
 #USR_VARIABLES_________________________________________________________
@@ -26,7 +27,7 @@ from RpiMotorLib import RpiMotorLib
 - enable/disable correct indication
 '''
 
-TSID = "TS001"
+TSID = "TS004"
 test_mode_str = ""
 
 #GLOBAL_VARIABLES______________________________________________________
@@ -43,7 +44,7 @@ test_mode_str = ""
 test_mode_dic = {
 #    "bla": ["blabla", n_trials, [min_pos, max_pos, grid_pos]],
     "0": ["user_training", 5, [2.5, 45, 18]],
-    "1": ["forearm", 20, [2.5, 45, 18]],
+    "1": ["forearm", 50, [2.5, 45, 18]],
     "2": ["thigh",],
     "3": ["fine",],
     }
@@ -61,7 +62,7 @@ burst_dic = {
 #x = np.linspace(0, 45, 19)  # possible stimuli to use -> test_arr[2]
 a = np.linspace(0.01, 60, 31)  # threshold/bias grid
 b = np.linspace(0.01, 10, 50)  # slope grid
-gamma = np.linspace(0.01, 0.99, 100) # guess rate
+gamma = np.linspace(0.01, 0.99, 100) # guess rate grid
 delta = 0.02  # lapse
 
 #define GPIOs stepper_sc scissors
@@ -478,9 +479,24 @@ def save_mgmt(data_arr):
     OUT:
     DO:
     '''
+    global file_path
 
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M')
-    file_name = TSID +"_"+ test_mode_str +"_"+ timestamp +".npy"
+    file_name_data = TSID +"_"+ test_mode_str +"_data_"+ timestamp +".npy"
+    file_name_pThreshold = TSID +"_"+ test_mode_str +"_pThreshold_"+ timestamp +".npy"
+    file_name_pSlope = TSID +"_"+ test_mode_str +"_pSlope_"+ timestamp +".npy"
+    file_name_pLapse = TSID +"_"+ test_mode_str +"_pLapse_"+ timestamp +".npy"
+    file_name_pGuess = TSID +"_"+ test_mode_str +"_pGuess_"+ timestamp +".npy"
+    file_name_eThreshold = TSID +"_"+ test_mode_str +"_eThreshold_"+ timestamp +".npy"
+    file_name_eSlope = TSID +"_"+ test_mode_str +"_eSlope_"+ timestamp +".npy"
+    file_name_eLapse = TSID +"_"+ test_mode_str +"_eLapse_"+ timestamp +".npy"
+    file_name_eGuess = TSID +"_"+ test_mode_str +"_eGuess_"+ timestamp +".npy"
+    file_name_stdThreshold = TSID +"_"+ test_mode_str +"_stdThreshold_"+ timestamp +".npy"
+    file_name_stdSlope = TSID +"_"+ test_mode_str +"_stdSlope_"+ timestamp +".npy"
+    file_name_stdLapse = TSID +"_"+ test_mode_str +"_stdLapse_"+ timestamp +".npy"
+    file_name_stdGuess = TSID +"_"+ test_mode_str +"_stdGuess_"+ timestamp +".npy"
+
+
     file_path = str(TSID)
 
     #check for directory with TSID
@@ -488,9 +504,21 @@ def save_mgmt(data_arr):
         os.mkdir(file_path)
         print("new directory " + TSID + " created")
 
-    np.save(os.path.join(file_path, file_name), data_arr)
+    np.save(os.path.join(file_path, file_name_data), data_arr)
+    np.save(os.path.join(file_path, file_name_pThreshold), psi.pThreshold)
+    np.save(os.path.join(file_path, file_name_pSlope), psi.pSlope)
+    np.save(os.path.join(file_path, file_name_pLapse), psi.pLapse)
+    np.save(os.path.join(file_path, file_name_pGuess), psi.pGuess)
+    np.save(os.path.join(file_path, file_name_eThreshold), psi.eThreshold)
+    np.save(os.path.join(file_path, file_name_eSlope), psi.eSlope)
+    np.save(os.path.join(file_path, file_name_eLapse), psi.eLapse)
+    np.save(os.path.join(file_path, file_name_eGuess), psi.eGuess)
+    np.save(os.path.join(file_path, file_name_stdThreshold), psi.stdThreshold)
+    np.save(os.path.join(file_path, file_name_stdSlope), psi.stdSlope)
+    np.save(os.path.join(file_path, file_name_stdLapse), psi.stdLapse)
+    np.save(os.path.join(file_path, file_name_stdGuess), psi.stdGuess)
 
-    print(f'stored in file {os.path.join(file_path, file_name)}')
+    print(f'stored in file {os.path.join(file_path, file_name_data)}')
 
     return
 
@@ -530,5 +558,5 @@ if __name__ == "__main__":
         #GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
         GPIO.cleanup()
 
-    psi.plot(muRef=10, sigmaRef=1, lapseRef=0.02, guessRef=0.5)
-
+    psi.plot(muRef=10, sigmaRef=1, lapseRef=0.02, guessRef=0.5, save=True)
+    shutil.move('PsiCurve.png', file_path)

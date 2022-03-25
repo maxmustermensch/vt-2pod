@@ -34,13 +34,14 @@ Prins, N. (2013). The psi-marginal adaptive method: How to give nuisance paramet
 import numpy as np
 from sklearn.utils.extmath import cartesian
 import scipy
+import shutil
 from scipy.stats import norm, beta, gamma
 from scipy.special import erfc
 import threading
 import matplotlib.pyplot as plt
 
 
-def pf(parameters, psyfun='cGauss'):
+def pf(parameters, psyfun='Weibull'):
     """Generate conditional probabilities from psychometric function.
 
     Arguments
@@ -100,7 +101,7 @@ def pf(parameters, psyfun='cGauss'):
     return y
 
 
-def GenerateData(parameters, psyfun='cGauss', ntrials=None):
+def GenerateData(parameters, psyfun='Weibull', ntrials=None):
     """Generate conditional probabilities from psychometric function.
 
     Arguments
@@ -213,7 +214,7 @@ class Psi:
             >>> obj.addData(resp)
     """
 
-    def __init__(self, stimRange, Pfunction='cGauss', nTrials=50, threshold=None, thresholdPrior=('uniform', None),
+    def __init__(self, stimRange, Pfunction='Weibull', nTrials=50, threshold=None, thresholdPrior=('uniform', None),
                  slope=None, slopePrior=('uniform', None),
                  guessRate=None, guessPrior=('uniform', None), lapseRate=None, lapsePrior=('uniform', None),
                  marginalize=True, thread=True):
@@ -533,6 +534,11 @@ class Psi:
             poststd = np.sqrt(
                 np.sum(self.likelihood ** 2 * self.pdfND, axis=(0, 1, 2, 3)) - postmean ** 2)  # std
 
+        #max p a for the threshold:
+
+        max_p_a = round(self.threshold[np.argmax(self.pThreshold)], 2)
+
+
         fig = plt.figure(figsize=(8, 7))
         subplt1 = plt.subplot(2, 2, 1)
         #if ref:
@@ -548,15 +554,17 @@ class Psi:
         subplt1.set(xlim=[0,self.stimRange[-1]],ylim=[0.5,1]) 
         plt.axhline(y=0.5, color='black', linestyle=':')
         plt.axhline(y=0.95, color='black', linestyle='--')
+        plt.axvline(max_p_a, color='k', linestyle='dashed')
+
 
         plt.subplot(2, 2, 2)
         plt.plot(self.threshold, self.pThreshold, 'k')
         plt.xlabel(r'a')
         plt.ylabel('Posterior Probability')
-        plt.title('Posterior ' + r'a=' + str(np.round(self.eThreshold, 3)) +
+        plt.title('Posterior ' + r'a=' + str(max_p_a) +
                   r' $\pm$ ' + str(np.round(self.stdThreshold, 3)))
         #plt.axvline(muRef, color='k')
-        plt.axvline(self.eThreshold, color='k', linestyle='dashed')
+        plt.axvline(max_p_a, color='k', linestyle='dashed')
 
         #plt.subplot(2, 2, 3)
         #plt.plot(self.lapseRate, self.pLapse, 'k')
@@ -588,6 +596,7 @@ class Psi:
         #plt.axvline(sigmaRef, color='k')
         #plt.axvline(self.eSlope, color='k', linestyle='dashed')
         plt.tight_layout()
+
         if save:
             plt.savefig('PsiCurve.png')
 
@@ -604,7 +613,7 @@ class Psi:
         print(f'______________________\n\n' + \
               f'max p gamma = {str(round(self.guessRate[np.argmax(self.pGuess)], 2))}\n' + \
               f'max p delta = {str(round(self.lapseRate[0], 2))}\n' + \
-              f'max p a = {str(round(self.threshold[np.argmax(self.pThreshold)], 2))}\n' + \
+              f'max p a = {str(max_p_a)}\n' + \
               f'max p b = {str(round(self.slope[np.argmax(self.pSlope)], 2))}')
 
         print(f'______________________\n\n' + \

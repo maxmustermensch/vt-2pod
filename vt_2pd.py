@@ -46,7 +46,7 @@ test_mode_str = ""
 test_mode_dic = {
 #    "bla": ["blabla", n_trials, [min_pos, max_pos, grid_pos]],
     "0": ["user_training", 5, [2.5, 45, 18]],
-    "1": ["forearm", 50, [2.5, 45, 18]],
+    "1": ["forearm", 5, [2.5, 45, 18]],
     "2": ["thigh",],
     "3": ["fine",],
     }
@@ -237,7 +237,7 @@ def testing():
 
         li_up()
 
-        save_arr_add = np.array([[m, i, save_out, save_in, int(1000*(tsi_tstamp-burst_tstamp))]])
+        save_arr_add = np.array([[psi.xCurrent, i, save_out, save_in, int(1000*(tsi_tstamp-burst_tstamp))]])
         save_arr = np.append(save_arr, save_arr_add, axis=0)
 
         if tsi_answer == m: r = 1
@@ -485,6 +485,10 @@ def save_mgmt(data_arr):
 
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M')
     file_name_data = TSID +"_"+ test_mode_str +"_data_"+ timestamp +".npy"
+
+    file_name_stim = TSID +"_"+ test_mode_str +"_stim_"+ timestamp +".npy"
+    file_name_response = TSID +"_"+ test_mode_str +"_response_"+ timestamp +".npy"
+
     file_name_pThreshold = TSID +"_"+ test_mode_str +"_pThreshold_"+ timestamp +".npy"
     file_name_pSlope = TSID +"_"+ test_mode_str +"_pSlope_"+ timestamp +".npy"
     file_name_pLapse = TSID +"_"+ test_mode_str +"_pLapse_"+ timestamp +".npy"
@@ -507,6 +511,10 @@ def save_mgmt(data_arr):
         print("new directory " + TSID + " created")
 
     np.save(os.path.join(file_path, file_name_data), data_arr)
+
+    np.save(os.path.join(file_path, file_name_stim), psi.stim)
+    np.save(os.path.join(file_path, file_name_response), psi.response)
+
     np.save(os.path.join(file_path, file_name_pThreshold), psi.pThreshold)
     np.save(os.path.join(file_path, file_name_pSlope), psi.pSlope)
     np.save(os.path.join(file_path, file_name_pLapse), psi.pLapse)

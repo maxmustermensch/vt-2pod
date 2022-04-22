@@ -624,6 +624,9 @@ class Psi:
         print(f'______________________\n\n' + \
               f'95% threshold = {thresh95}')
 
+        self.postmean = postmean
+        self.poststd = poststd
+
         plt.show()
 
 

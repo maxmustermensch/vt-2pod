@@ -183,6 +183,7 @@ def testing():
     '''
     global test_mode_str
     global psi
+    global save_arr
 
     print(f'    0: {test_mode_dic["0"][0]} \n    1: {test_mode_dic["1"][0]} \n    2: {test_mode_dic["2"][0]}\n')
     test_mode = input("choose test mode: ")
@@ -249,7 +250,7 @@ def testing():
         time.sleep(1)
         i=i+1
 
-    save_mgmt(save_arr)
+    #save_mgmt(save_arr)
     get_pos(d0)
 
 
@@ -488,6 +489,9 @@ def save_mgmt(data_arr):
 
     file_name_stim = TSID +"_"+ test_mode_str +"_stim_"+ timestamp +".npy"
     file_name_response = TSID +"_"+ test_mode_str +"_response_"+ timestamp +".npy"
+    file_name_postmean = TSID +"_"+ test_mode_str +"_postmean_"+ timestamp +".npy"
+    file_name_poststd = TSID +"_"+ test_mode_str +"_poststd_"+ timestamp +".npy"
+    file_name_likelihood = TSID +"_"+ test_mode_str +"_likelihood_"+ timestamp +".npy"
 
     file_name_pThreshold = TSID +"_"+ test_mode_str +"_pThreshold_"+ timestamp +".npy"
     file_name_pSlope = TSID +"_"+ test_mode_str +"_pSlope_"+ timestamp +".npy"
@@ -514,6 +518,9 @@ def save_mgmt(data_arr):
 
     np.save(os.path.join(file_path, file_name_stim), psi.stim)
     np.save(os.path.join(file_path, file_name_response), psi.response)
+    np.save(os.path.join(file_path, file_name_postmean), psi.postmean)
+    np.save(os.path.join(file_path, file_name_poststd), psi.poststd)
+    np.save(os.path.join(file_path, file_name_likelihood), psi.likelihood)
 
     np.save(os.path.join(file_path, file_name_pThreshold), psi.pThreshold)
     np.save(os.path.join(file_path, file_name_pSlope), psi.pSlope)
@@ -569,4 +576,7 @@ if __name__ == "__main__":
         GPIO.cleanup()
 
     psi.plot(muRef=10, sigmaRef=1, lapseRef=0.02, guessRef=0.5, save=True)
+
+    save_mgmt(save_arr)
+    
     shutil.move('PsiCurve.png', file_path)

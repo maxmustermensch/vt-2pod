@@ -27,7 +27,9 @@ from RpiMotorLib import RpiMotorLib
 - enable/disable correct indication
 '''
 
-TSID = "TS004"
+TSID = "TS999"
+
+data_dir = "DATA"
 test_mode_str = ""
 
 #GLOBAL_VARIABLES______________________________________________________
@@ -497,7 +499,7 @@ def save_mgmt(data_arr):
     file_name_stdGuess = TSID +"_"+ test_mode_str +"_stdGuess_"+ timestamp +".npy"
 
 
-    file_path = str(TSID)
+    file_path = os.path.join(data_dir, TSID)
 
     #check for directory with TSID
     if not os.path.isdir(file_path):

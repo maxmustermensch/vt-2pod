@@ -34,7 +34,6 @@ Prins, N. (2013). The psi-marginal adaptive method: How to give nuisance paramet
 import numpy as np
 from sklearn.utils.extmath import cartesian
 import scipy
-import shutil
 from scipy.stats import norm, beta, gamma
 from scipy.special import erfc
 import threading
@@ -596,7 +595,7 @@ class Psi:
         #plt.axvline(sigmaRef, color='k')
         #plt.axvline(self.eSlope, color='k', linestyle='dashed')
         plt.tight_layout()
-
+        
         if save:
             plt.savefig('PsiCurve.png')
 

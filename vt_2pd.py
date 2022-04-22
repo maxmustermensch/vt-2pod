@@ -492,6 +492,7 @@ def save_mgmt(data_arr):
     file_name_postmean = TSID +"_"+ test_mode_str +"_postmean_"+ timestamp +".npy"
     file_name_poststd = TSID +"_"+ test_mode_str +"_poststd_"+ timestamp +".npy"
     file_name_likelihood = TSID +"_"+ test_mode_str +"_likelihood_"+ timestamp +".npy"
+    file_name_stimRange = TSID +"_"+ test_mode_str +"_stimRange_"+ timestamp +".npy"
 
     file_name_pThreshold = TSID +"_"+ test_mode_str +"_pThreshold_"+ timestamp +".npy"
     file_name_pSlope = TSID +"_"+ test_mode_str +"_pSlope_"+ timestamp +".npy"
@@ -521,6 +522,8 @@ def save_mgmt(data_arr):
     np.save(os.path.join(file_path, file_name_postmean), psi.postmean)
     np.save(os.path.join(file_path, file_name_poststd), psi.poststd)
     np.save(os.path.join(file_path, file_name_likelihood), psi.likelihood)
+    np.save(os.path.join(file_path, file_name_stimRange), psi.stimRange)
+     
 
     np.save(os.path.join(file_path, file_name_pThreshold), psi.pThreshold)
     np.save(os.path.join(file_path, file_name_pSlope), psi.pSlope)

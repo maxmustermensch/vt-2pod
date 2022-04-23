@@ -1,0 +1,11 @@
+charlotte
+sportlich
+raucher
+weibl
+29j
+rechtsh.
+
+notes:
+diskomfort: nein
+stärkere seite: blau stärker (b65-y90)
+vibrationscharakteristik: nur blau stärker

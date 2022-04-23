@@ -27,7 +27,7 @@ from RpiMotorLib import RpiMotorLib
 - enable/disable correct indication
 '''
 
-TSID = "TS005"
+TSID = "TS006"
 
 data_dir = "DATA"
 test_mode_str = ""
@@ -414,7 +414,7 @@ def burst(vib_motor_index, burst_rep, intesity_variation = False):
 
     #calib_vib0 in % duty cycle
     dc_calib_vib1 = 90
-    dc_calib_vib2 = 65
+    dc_calib_vib2 = 63
 
     if intesity_variation:
         lo_hi_vib1 = np.round(st.norm.interval(alpha=.99, loc = dc_calib_vib1, scale=3),0)

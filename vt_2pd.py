@@ -11,6 +11,7 @@
 import Jetson.GPIO as GPIO
 import numpy as np
 import scipy.stats as st
+import argparse
 import PsiMarginal
 import os
 import time
@@ -27,7 +28,7 @@ from RpiMotorLib import RpiMotorLib
 - enable/disable correct indication
 '''
 
-TSID = "TS006"
+#TSID = "TS007"
 
 data_dir = "DATA"
 test_mode_str = ""
@@ -414,7 +415,7 @@ def burst(vib_motor_index, burst_rep, intesity_variation = False):
 
     #calib_vib0 in % duty cycle
     dc_calib_vib1 = 90
-    dc_calib_vib2 = 63
+    dc_calib_vib2 = 65
 
     if intesity_variation:
         lo_hi_vib1 = np.round(st.norm.interval(alpha=.99, loc = dc_calib_vib1, scale=3),0)
@@ -557,6 +558,11 @@ def acc():
 #MAIN___________________________________________________________________
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("TSID")
+    args = parser.parse_args()
+    TSID = args.TSID
+
     try:
         #init_remote()
 
@@ -575,7 +581,6 @@ if __name__ == "__main__":
         
     finally:
         GPIO.output([PIN_stepper_sleep_sc, PIN_stepper_sleep_li], GPIO.LOW)
-        #GPIO.output([PIN_motor_out0, PIN_motor_out1, PIN_motor_out2], [0,0,0])
         GPIO.cleanup()
 
     psi.plot(muRef=10, sigmaRef=1, lapseRef=0.02, guessRef=0.5, save=True)

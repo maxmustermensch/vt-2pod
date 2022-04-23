@@ -1,0 +1,13 @@
+charlotte
+längs
+sportlich
+raucher
+weibl
+29j
+rechtsh.
+
+notes:
+diskomfort: nein
+stärkere seite: blau stärker (b63-y90)
+vibrationscharakteristik: nur blau stärker
+kognitive anstrengung: ja da zweiter versuch mit 50n

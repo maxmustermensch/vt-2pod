@@ -1,0 +1,13 @@
+max
+2POD t
+sportlich
+raucher
+männl
+31j
+rechtsh.
+
+notes:
+diskomfort: nein
+stärkere seite: nein
+vibrationscharakteristik: nein
+kognitive anstrengung: nein
